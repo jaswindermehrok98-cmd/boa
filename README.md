@@ -6,6 +6,9 @@ Browser-based design editor with local project storage, templates, editable canv
 The editor and server routes are in the repository. AI and cloud collaboration require credentials and a configured Supabase database; those services are not provisioned by this repository. A successful static page load alone does not verify full-stack readiness.
 
 ## Deploy to Vercel
+
+This repository targets **Node.js 24.x**. The GitHub Actions workflow runs syntax checks and API smoke tests on Node 24 for pushes and pull requests to `main` (and can be run manually with **Actions → Mosaic Studio checks → Run workflow**).
+
 1. Import this GitHub repository into Vercel; use the repository root.
 2. Add the environment variables below in Vercel Project Settings.
 3. Create a Supabase project and run `supabase/migrations/001_mosaic_collaboration.sql` in its SQL Editor.
@@ -25,7 +28,11 @@ The AI endpoint returns a constrained design-edit plan and validates operation t
 The API stores shared documents and version history in Supabase. Invite links are bearer credentials: anyone with a valid link can read and edit that room. This initial version does not provide user accounts or per-user permissions. Realtime broadcasts use a room-specific derived channel name; treat invite links as secrets.
 
 ## Local checks
-Requires Node.js 20+. Run `npm run check` and `npm test`. The HTML editor can be opened in a browser, but server routes require Vercel's local runtime (for example `npx vercel dev`).
+Requires Node.js 24.x. Run `npm run check` and `npm test`. The repository has no npm runtime dependencies, so you do not need to run an install step for these checks. The HTML editor can be opened in a browser, but server routes require Vercel's local runtime (for example `npx vercel dev`).
+
+## Automatic deployments
+
+After the repository is linked to a Vercel project, pushes to the configured production branch trigger deployments automatically, and other branches/PRs can generate preview deployments according to the Vercel project's Git settings. The GitHub Actions workflow is a separate quality gate; it does not connect GitHub to Vercel by itself.
 
 ## Production checklist
 - [ ] Verify editor loads with no console errors.
