@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
   },
   "scripts": {
     "check": "node --check api/ai/design.js && node --check api/collaboration/config.js && node --check api/collaboration/rooms.js && node scripts/check-inline.js",
