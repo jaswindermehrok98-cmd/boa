@@ -1,0 +1,12 @@
+{
+  "name": "mosaic-studio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "check": "node --check api/ai/design.js && node --check api/collaboration/config.js && node --check api/collaboration/rooms.js",
+    "test": "node --test test-api.mjs"
+  },
+  "dependencies": {}
+}
