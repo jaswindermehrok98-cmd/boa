@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#20231d">
+<title>Mosaic Studio — Design Lab</title>
+<style>
+:root {
+  --ink: #20231d;
+  --ink-2: #30352b;
+  --muted: #787d72;
+  --line: #e5e7df;
+  --paper: #f5f5ef;
+  --panel: #ffffff;
+  --lime: #d7f36b;
+  --lime-2: #c5e452;
+  --sage: #e7ebdd;
+  --danger: #a63b32;
+  --shadow: 0 18px 45px rgba(28, 31, 23, .12);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: var(--paper); }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid #829a34; outline-offset: 2px; }
+#app-root { width: 100%; height: 100%; background: var(--paper); display: flex; flex-direction: column; overflow: hidden; }
+.topbar { height: 62px; min-height: 62px; background: var(--ink); color: #f6f6ef; display: flex; align-items: center; padding: 0 20px; gap: 18px; z-index: 5; border-bottom: 1px solid #34382e; }
+.brand { display: flex; align-items: center; gap: 10px; min-width: 216px; cursor: pointer; }
+.brand-mark { width: 29px; height: 29px; border-radius: 9px; background: var(--lime); color: var(--ink); display: grid; place-items: center; font-size: 17px; font-weight: 900; transform: rotate(-5deg); box-shadow: 4px 4px 0 #56672a; }
+.brand-name { font-size: 14px; font-weight: 850; letter-spacing: .13em; }
+.brand-sub { color: #aeb4a5; text-transform: uppercase; font-size: 8px; letter-spacing: .18em; display: block; margin-top: 3px; }
+.top-divider { height: 26px; width: 1px; background: #44483f; }
+.topbar-center { min-width: 0; flex: 1; display: flex; align-items: center; gap: 12px; }
+.project-title { background: transparent; border: 1px solid transparent; border-radius: 7px; color: white; padding: 8px 10px; width: min(280px, 100%); font-weight: 650; font-size: 13px; }
+.project-title:hover, .project-title:focus { border-color: #575b50; }
+.save-state { color: #aab09f; font-size: 11px; white-space: nowrap; }
+.top-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; background: #fff; color: var(--ink); font-size: 12px; font-weight: 700; white-space: nowrap; transition: background .15s, transform .15s, border-color .15s; }
+.btn:hover { background: #f0f2e9; border-color: #d0d5c6; }
+.btn:active { transform: translateY(1px); }
+.btn.dark { background: #30352b; color: #fff; border-color: #454a3d; }
+.btn.dark:hover { background: #414737; }
+.btn.lime { background: var(--lime); color: #22251b; border-color: var(--lime); }
+.btn.lime:hover { background: var(--lime-2); border-color: var(--lime-2); }
+.btn.ghost-dark { background: transparent; color: #f6f6ef; border-color: #464b40; }
+.btn.ghost-dark:hover { background: #33372e; }
+.btn.small { padding: 7px 9px; font-size: 11px; border-radius: 7px; }
+.btn.icon { width: 34px; height: 34px; padding: 0; font-size: 16px; }
+.btn[disabled] { opacity: .35; cursor: not-allowed; }
+.dashboard { display: none; min-height: 0; flex: 1; overflow-y: auto; padding: 34px clamp(20px, 5vw, 76px) 54px; }
+body.screen-dashboard .dashboard { display: block; }
+body.screen-dashboard .editor-view { display: none; }
+body.screen-dashboard .editor-controls { display: none !important; }
+body.screen-dashboard .dashboard-controls { display: flex !important; }
+body:not(.screen-dashboard) .dashboard-controls { display: none !important; }
+.dashboard-wrap { max-width: 1420px; margin: 0 auto; }
+.dash-eyebrow { display: inline-flex; gap: 8px; align-items: center; font-size: 10px; letter-spacing: .18em; font-weight: 800; text-transform: uppercase; color: #68715a; }
+.dash-eyebrow:before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #9bb936; }
+.dash-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin: 11px 0 33px; }
+.dash-header h1 { font-size: clamp(30px, 4vw, 49px); line-height: 1.05; letter-spacing: -.055em; margin: 8px 0 12px; font-weight: 850; }
+.dash-header p { color: var(--muted); font-size: 14px; margin: 0; }
+.dash-actions { display: flex; gap: 10px; margin-bottom: 4px; }
+.dash-section { margin-top: 35px; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.section-heading h2 { margin: 0; font-size: 16px; letter-spacing: -.02em; }
+.section-heading span { font-size: 11px; color: var(--muted); }
+.template-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.template-card { border: 1px solid #e3e5dc; padding: 0; background: #fff; border-radius: 13px; overflow: hidden; text-align: left; min-width: 0; transition: transform .18s, box-shadow .18s, border-color .18s; }
+.template-card:hover { transform: translateY(-3px); border-color: #b6c38b; box-shadow: 0 12px 24px rgba(32,35,29,.08); }
+.template-preview { background: #e7e9df; aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; padding: 18px; overflow: hidden; }
+.template-preview svg { display: block; max-width: 100%; max-height: 100%; box-shadow: 0 8px 18px rgba(0,0,0,.12); border-radius: 2px; }
+.template-meta { padding: 11px 12px 13px; }
+.template-meta strong { display: block; font-size: 12px; line-height: 1.35; }
+.template-meta small { color: var(--muted); font-size: 10px; display: block; margin-top: 4px; }
+.recent-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.recent-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; text-align: left; padding: 0; }
+.recent-card:hover { border-color: #a9bb74; }
+.recent-thumb { height: 112px; display: grid; place-items: center; background: #eaece3; }
+.recent-thumb svg { max-height: 94px; max-width: 88%; box-shadow: 0 6px 14px #0001; }
+.recent-meta { padding: 11px 12px; display: flex; align-items: center; gap: 8px; }
+.recent-meta div { min-width: 0; flex: 1; }
+.recent-meta strong { display: block; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent-meta small { color: var(--muted); font-size: 10px; display: block; margin-top: 4px; }
+.empty-recent { background: #eceee5; border: 1px dashed #cdd2c1; border-radius: 12px; grid-column: 1/-1; padding: 24px; color: #737967; display: flex; align-items: center; gap: 14px; font-size: 13px; }
+.empty-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--lime); color: #343a20; display: grid; place-items: center; font-size: 19px; }
+.dashboard-footer { color: #8a8e83; font-size: 10px; margin-top: 42px; border-top: 1px solid #e3e5dc; padding-top: 15px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.editor-view { flex: 1; min-height: 0; display: grid; grid-template-columns: 62px 250px minmax(280px,1fr) 270px; overflow: hidden; }
+.rail { background: var(--ink); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 11px 5px; border-right: 1px solid #35392e; }
+.rail-btn { background: transparent; border: 0; border-radius: 10px; color: #aeb4a6; width: 48px; min-height: 52px; padding: 7px 2px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font-size: 9px; font-weight: 700; }
+.rail-btn .rail-glyph { font-size: 19px; line-height: 1; }
+.rail-btn:hover { background: #31362b; color: #fff; }
+.rail-btn.active { background: var(--lime); color: #292d21; }
+.rail-spacer { flex: 1; }
+.left-panel { min-height: 0; display: flex; flex-direction: column; background: #fff; border-right: 1px solid var(--line); overflow: hidden; }
+.panel-header { padding: 18px 16px 13px; border-bottom: 1px solid var(--line); }
+.panel-header h2 { margin: 0; font-size: 14px; font-weight: 800; letter-spacing: -.02em; }
+.panel-header p { margin: 6px 0 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
+.panel-scroll { min-height: 0; overflow-y: auto; padding: 13px 13px 22px; }
+.searchbox { width: 100%; height: 36px; background: #f5f6f1; border: 1px solid #e3e6dc; border-radius: 8px; padding: 0 10px; font-size: 11px; margin-bottom: 13px; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 13px; }
+.pill { border: 1px solid #e4e6dd; border-radius: 999px; background: white; padding: 6px 9px; font-size: 10px; color: #687061; }
+.pill.active { background: #e9f3c7; border-color: #cedc9b; color: #3e4b23; font-weight: 800; }
+.panel-template-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+.panel-template { border: 1px solid #e5e7df; border-radius: 9px; overflow: hidden; background: #fff; padding: 0; text-align: left; }
+.panel-template:hover { border-color: #aabb70; }
+.panel-template .tiny-preview { display: grid; place-items: center; height: 94px; padding: 9px; background: #f0f1eb; }
+.panel-template svg { max-width: 100%; max-height: 100%; box-shadow: 0 3px 8px #0001; }
+.panel-template span { display: block; font-size: 10px; font-weight: 700; padding: 8px 7px; }
+.panel-label { font-size: 10px; color: var(--muted); letter-spacing: .07em; text-transform: uppercase; font-weight: 800; margin: 15px 0 8px; }
+.control-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.tool-card { background: #fafbf7; border: 1px solid #e3e6db; border-radius: 10px; padding: 12px 8px; text-align: center; color: #42483b; font-size: 11px; font-weight: 700; }
+.tool-card:hover { background: #eef5d7; border-color: #c8d990; }
+.tool-card .tool-symbol { font-size: 20px; display: block; margin-bottom: 7px; }
+.text-choice { width: 100%; padding: 13px 12px; border-radius: 9px; background: white; border: 1px solid #e1e5d9; text-align: left; margin-bottom: 8px; }
+.text-choice:hover { border-color: #b1c879; background: #fafcf5; }
+.text-choice strong { display: block; font-size: 15px; letter-spacing: -.04em; }
+.text-choice small { color: var(--muted); display: block; font-size: 10px; margin-top: 5px; }
+.color-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 9px; }
+.swatch { width: 100%; aspect-ratio: 1; border-radius: 8px; border: 1px solid #0001; box-shadow: inset 0 0 0 1px #00000006; }
+.swatch:hover { outline: 2px solid #acbd73; outline-offset: 2px; }
+.upload-drop { border: 1px dashed #bcc5aa; background: #f9fbf4; border-radius: 12px; text-align: center; padding: 25px 10px; cursor: pointer; color: #667056; }
+.upload-drop:hover { background: #eef4d8; }
+.upload-drop .upload-icon { font-size: 27px; display: block; margin-bottom: 9px; }
+.upload-drop strong { display: block; font-size: 12px; color: #404735; }
+.upload-drop small { display: block; font-size: 10px; margin-top: 6px; line-height: 1.4; }
+.asset-note { font-size: 10px; line-height: 1.5; color: #7d8375; margin-top: 12px; }
+.editor-main { min-width: 0; min-height: 0; display: flex; flex-direction: column; background: #f0f0e9; }
+.canvas-toolbar { height: 53px; min-height: 53px; display: flex; align-items: center; gap: 8px; padding: 0 15px; border-bottom: 1px solid #e1e4d9; background: #f7f7f2; }
+.canvas-label { font-size: 11px; font-weight: 800; color: #41473a; }
+.canvas-size-label { font-size: 10px; color: #878c80; margin-left: 2px; }
+.toolbar-spacer { flex: 1; }
+.zoom-value { font-size: 10px; color: #656b5f; min-width: 34px; text-align: center; }
+.stage-scroll { min-height: 0; flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 35px 28px; position: relative; }
+.stage-frame { display: flex; flex-direction: column; align-items: center; justify-content: center; max-width: none; transition: transform .12s; transform-origin: center center; }
+.stage-shadow { background: white; box-shadow: 0 18px 45px rgba(44,48,37,.17), 0 2px 8px rgba(44,48,37,.07); line-height: 0; }
+#design-canvas { display: block; background: white; overflow: visible; touch-action: none; user-select: none; }
+.stage-caption { font-size: 9px; color: #989c91; letter-spacing: .08em; text-transform: uppercase; margin-top: 17px; font-weight: 700; }
+.pages-tray { min-height: 114px; height: 114px; background: #f8f8f3; border-top: 1px solid #e0e3d8; padding: 11px 15px 9px; display: flex; flex-direction: column; gap: 9px; }
+.pages-top { display: flex; align-items: center; justify-content: space-between; }
+.pages-top strong { font-size: 10px; color: #53594d; letter-spacing: .06em; text-transform: uppercase; }
+.pages-actions { display: flex; gap: 6px; }
+.page-cards { display: flex; align-items: center; gap: 10px; min-height: 0; overflow-x: auto; padding-bottom: 2px; }
+.page-card { flex: 0 0 65px; height: 58px; border: 1px solid #dfe3d7; border-radius: 7px; background: #fff; position: relative; padding: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+.page-card.active { border: 2px solid #8da934; box-shadow: 0 0 0 2px #d9ec96; }
+.page-card svg { max-width: 100%; max-height: 39px; }
+.page-card span { font-size: 8px; color: #777e6c; }
+.page-add { border: 1px dashed #c6ccba; border-radius: 7px; flex: 0 0 46px; height: 52px; font-size: 21px; background: transparent; color: #777e6c; }
+.page-add:hover { background: #eef4db; border-color: #b6c97b; }
+.inspector { min-height: 0; display: flex; flex-direction: column; background: white; border-left: 1px solid var(--line); overflow: hidden; }
+.inspector-tabs { display: flex; padding: 0 14px; border-bottom: 1px solid var(--line); height: 53px; min-height: 53px; gap: 18px; align-items: stretch; }
+.inspector-tab { background: transparent; border: 0; border-bottom: 2px solid transparent; font-size: 11px; font-weight: 800; color: #818678; padding: 0 1px; }
+.inspector-tab.active { color: #33382b; border-bottom-color: #98b63b; }
+.inspector-scroll { min-height: 0; overflow-y: auto; padding: 15px 15px 25px; }
+.inspector-kicker { font-size: 10px; text-transform: uppercase; font-weight: 850; color: #737a69; letter-spacing: .1em; margin: 0 0 12px; }
+.form-row { margin-bottom: 13px; }
+.form-row label { display: flex; justify-content: space-between; gap: 6px; font-size: 10px; color: #777e70; margin-bottom: 6px; font-weight: 650; }
+.form-control { width: 100%; border: 1px solid #dfe3d7; background: #fff; border-radius: 7px; padding: 9px 10px; color: #31362b; font-size: 11px; min-width: 0; }
+.form-control:focus { border-color: #9bb34b; outline: 2px solid #edf5d4; }
+.form-control.short { padding: 8px 8px; }
+.form-control.textarea { resize: vertical; min-height: 68px; line-height: 1.45; }
+.form-two { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.form-three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+.color-control-wrap { display: flex; align-items: center; gap: 8px; border: 1px solid #dfe3d7; padding: 4px 6px; border-radius: 7px; }
+.color-control-wrap input[type=color] { width: 29px; height: 27px; border: 0; padding: 0; background: none; cursor: pointer; }
+.color-control-wrap span { color: #797f70; font-size: 10px; text-transform: uppercase; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eef0e9; font-size: 11px; color: #5b6253; }
+.toggle { width: 33px; height: 19px; border: 0; border-radius: 99px; background: #daddd2; padding: 2px; display: flex; align-items: center; }
+.toggle:after { content: ''; display: block; width: 15px; height: 15px; border-radius: 50%; background: white; box-shadow: 0 1px 3px #0002; transition: transform .15s; }
+.toggle.on { background: #9db742; }
+.toggle.on:after { transform: translateX(14px); }
+.layers-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.layers-heading strong { font-size: 10px; text-transform: uppercase; color: #6f7666; letter-spacing: .1em; }
+.layer-list { display: flex; flex-direction: column; gap: 5px; }
+.layer-item { min-width: 0; display: flex; align-items: center; gap: 7px; padding: 8px 7px; border: 1px solid transparent; border-radius: 8px; background: #f8f9f5; text-align: left; }
+.layer-item:hover { border-color: #e1e6d3; }
+.layer-item.selected { border-color: #c1d28c; background: #f1f7dc; }
+.layer-kind { width: 27px; height: 27px; border-radius: 6px; background: #e8eadd; color: #5d654f; display: grid; place-items: center; flex: 0 0 27px; font-size: 13px; }
+.layer-name { flex: 1; min-width: 0; font-size: 10px; color: #4b5143; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; }
+.layer-mini { border: 0; background: transparent; color: #888e80; font-size: 11px; padding: 3px; }
+.layer-mini:hover { color: var(--ink); }
+.selection-empty { color: #7c8274; line-height: 1.65; font-size: 11px; }
+.selection-empty .empty-icon { margin-bottom: 12px; }
+.action-stack { display: flex; flex-direction: column; gap: 7px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; background: #252920; color: #f5f5ef; box-shadow: var(--shadow); border: 1px solid #484d3e; padding: 11px 15px; border-radius: 10px; font-size: 11px; z-index: 100; transition: .2s ease; max-width: calc(100vw - 30px); }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.modal-backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(24,26,21,.47); display: grid; place-items: center; padding: 22px; }
+.modal { width: min(450px, 100%); background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 30px 90px #0003; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+.modal-header strong { font-size: 15px; }
+.modal-body { padding: 20px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.hidden { display: none !important; }
+@media (max-width: 1160px) {
+  .editor-view { grid-template-columns: 58px 220px minmax(250px,1fr) 240px; }
+  .template-grid, .recent-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .brand { min-width: 170px; }
+}
+
+/* Advanced AI + collaboration surfaces */
+.modal.modal-wide { width:min(760px,96vw); }
+.mosaic-feature-kicker { font-size:10px; text-transform:uppercase; letter-spacing:.16em; font-weight:850; color:#737c62; margin:0 0 8px; }
+.mosaic-textarea { min-height:112px; resize:vertical; }
+.mosaic-feature-status { border:1px solid #e4e7dc; background:#f5f6ef; border-radius:9px; padding:10px 12px; color:#606752; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.mosaic-plan { display:grid; gap:8px; margin-top:14px; }
+.mosaic-plan-item { display:grid; grid-template-columns:28px minmax(0,1fr); gap:9px; align-items:start; border:1px solid #e5e7df; padding:10px; border-radius:9px; background:#fff; }
+.mosaic-plan-number { display:grid; place-items:center; width:25px; height:25px; background:#e9efdc; border-radius:7px; font-size:11px; font-weight:850; }
+.mosaic-plan-item strong { display:block; font-size:12px; margin:0 0 3px; }
+.mosaic-plan-item small { display:block; color:#73796c; font-size:11px; line-height:1.45; overflow-wrap:anywhere; }
+.mosaic-inline-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.mosaic-field-label { display:block; font-size:11px; font-weight:750; margin:12px 0 6px; color:#545b49; }
+.mosaic-room-url { width:100%; min-width:0; border:1px solid #dce0d4; border-radius:8px; background:#f8f9f4; padding:10px; font-size:11px; color:#343a2e; }
+.mosaic-presence { display:inline-flex; align-items:center; gap:6px; font-size:10px; color:#d3d8c8; white-space:nowrap; }
+.mosaic-presence-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#d7f36b; box-shadow:0 0 0 3px rgba(215,243,107,.12); }
+.feature-note { font-size:11px; line-height:1.5; color:#747a6e; margin:10px 0 0; }
+@media (max-width: 900px) {
+  #collaborateBtn { display:none !important; }
+  .mosaic-presence { display:none; }
+}
+
+@media (max-width: 900px) {
+  .editor-view { grid-template-columns: 54px 205px minmax(0,1fr); }
+  .inspector { display: none; }
+  .brand { min-width: 0; }
+  .brand-sub, .top-divider { display: none; }
+  .save-state { display: none; }
+  .dash-header { align-items: flex-start; flex-direction: column; }
+  .template-grid, .recent-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 600px) {
+  .topbar { height: 56px; min-height: 56px; padding: 0 10px; gap: 8px; }
+  .brand-name { font-size: 12px; }
+  .brand-mark { width: 25px; height: 25px; }
+  .brand { gap: 7px; }
+  .top-actions { gap: 5px; }
+  .top-actions .btn { padding: 8px; font-size: 10px; }
+  .editor-view { grid-template-columns: 48px minmax(0,1fr); }
+  .left-panel { display: none; }
+  .rail { gap: 3px; padding: 6px 3px; }
+  .rail-btn { width: 41px; min-height: 47px; font-size: 8px; }
+  .stage-scroll { padding: 20px 8px; }
+  .canvas-toolbar { padding: 0 8px; }
+  .canvas-toolbar .canvas-size-label { display: none; }
+  .pages-tray { padding-left: 8px; padding-right: 8px; }
+  .dashboard { padding: 25px 16px 40px; }
+  .template-grid, .recent-grid { gap: 9px; }
+  .dash-actions { width: 100%; }
+  .dash-actions .btn { flex: 1; }
+}
+</style>
+</head>
+<body class="screen-dashboard">
+<div id="app-root">
+  <header class="topbar">
+    <div class="brand" id="brandHome" title="Back to projects">
+      <div class="brand-mark">M</div>
+      <div><div class="brand-name">MOSAIC</div><span class="brand-sub">Design studio</span></div>
+    </div>
+    <div class="top-divider"></div>
+    <div class="topbar-center editor-controls">
+      <input class="project-title" id="projectTitle" value="Untitled design" aria-label="Design name">
+      <span class="save-state" id="saveState">Local workspace</span><span class="mosaic-presence" id="collabPresence" hidden><i class="mosaic-presence-dot"></i><span id="collabPresenceText">Shared room</span></span>
+    </div>
+    <div class="top-actions">
+      <div class="editor-controls" style="display:flex;gap:7px;align-items:center">
+        <button class="btn ghost-dark small" id="undoBtn" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+        <button class="btn ghost-dark small" id="redoBtn" title="Redo (Ctrl+Shift+Z)" disabled>↷ Redo</button>
+        <button class="btn ghost-dark small" id="backToProjects">Projects</button>
+        <button class="btn ghost-dark small" id="aiDesignBtn" title="Ask AI to edit this design">✦ AI</button>
+        <button class="btn ghost-dark small" id="collaborateBtn" title="Share and edit together">◉ Collaborate</button>
+        <button class="btn lime" id="exportMenuBtn">Export ↗</button>
+      </div>
+      <div class="dashboard-controls" style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:11px;color:#aeb4a6;margin-right:5px">LOCAL-FIRST · NO ACCOUNT NEEDED</span>
+        <button class="btn ghost-dark small" id="dashboardCollaborateBtn">◉ Collaborate</button><button class="btn lime" id="dashboardBlank">＋ Create design</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="dashboard" id="dashboard">
+    <div class="dashboard-wrap">
+      <div class="dash-eyebrow">Your creative workspace</div>
+      <div class="dash-header">
+        <div><h1>Make something<br>worth looking at.</h1><p>A focused canvas for social graphics, posters, thumbnails and more.</p></div>
+        <div class="dash-actions"><button class="btn dark" id="dashboardBlank2">＋ Blank design</button><button class="btn" id="importProjectBtn">⇧ Import project</button></div>
+      </div>
+      <section class="dash-section">
+        <div class="section-heading"><h2>Start with a template</h2><span>Choose a canvas. Make it yours.</span></div>
+        <div class="template-grid" id="dashboardTemplates"></div>
+      </section>
+      <section class="dash-section">
+        <div class="section-heading"><h2>Recent designs</h2><span id="recentCount">Saved in this browser</span></div>
+        <div class="recent-grid" id="recentGrid"></div>
+      </section>
+      <div class="dashboard-footer"><span>MOSAIC STUDIO · A local-first design workbench</span><span>Projects stay in this browser unless you export them.</span></div>
+    </div>
+  </main>
+
+  <main class="editor-view" id="editorView">
+    <nav class="rail" aria-label="Editor tools">
+      <button class="rail-btn active" data-tab="templates"><span class="rail-glyph">▧</span>Templates</button>
+      <button class="rail-btn" data-tab="elements"><span class="rail-glyph">◈</span>Elements</button>
+      <button class="rail-btn" data-tab="text"><span class="rail-glyph">T</span>Text</button>
+      <button class="rail-btn" data-tab="uploads"><span class="rail-glyph">↑</span>Uploads</button>
+      <button class="rail-btn" data-tab="background"><span class="rail-glyph">◒</span>Background</button>
+      <div class="rail-spacer"></div>
+      <button class="rail-btn" id="newCustomSize"><span class="rail-glyph">↗</span>Resize</button>
+      <button class="rail-btn" id="saveProjectBtn"><span class="rail-glyph">▣</span>Save</button>
+    </nav>
+    <aside class="left-panel">
+      <div class="panel-header"><h2 id="leftPanelTitle">Templates</h2><p id="leftPanelSub">Start from a layout, then edit every element.</p></div>
+      <div class="panel-scroll" id="leftPanelContent"></div>
+    </aside>
+    <section class="editor-main">
+      <div class="canvas-toolbar">
+        <div><div class="canvas-label" id="canvasLabel">Portrait post</div><div class="canvas-size-label" id="canvasSizeLabel">1080 × 1350 px</div></div>
+        <div class="toolbar-spacer"></div>
+        <button class="btn icon small" id="zoomOut" title="Zoom out">−</button>
+        <span class="zoom-value" id="zoomValue">100%</span>
+        <button class="btn icon small" id="zoomIn" title="Zoom in">＋</button>
+        <button class="btn small" id="fitCanvas" title="Fit page to workspace">Fit</button>
+      </div>
+      <div class="stage-scroll" id="stageScroll">
+        <div class="stage-frame" id="stageFrame">
+          <div class="stage-shadow" id="stageShadow"><svg id="design-canvas" role="img" aria-label="Editable design canvas"></svg></div>
+          <div class="stage-caption">MOSAIC · LIVE CANVAS</div>
+        </div>
+      </div>
+      <div class="pages-tray">
+        <div class="pages-top"><strong>Pages <span id="pageCount">1</span></strong><div class="pages-actions"><button class="btn small" id="duplicatePageBtn">⧉ Duplicate page</button><button class="btn small" id="deletePageBtn">− Remove</button></div></div>
+        <div class="page-cards" id="pageCards"></div>
+      </div>
+    </section>
+    <aside class="inspector">
+      <div class="inspector-tabs"><button class="inspector-tab active" id="propertiesTab">Properties</button><button class="inspector-tab" id="layersTab">Layers</button></div>
+      <div class="inspector-scroll" id="inspectorContent"></div>
+    </aside>
+  </main>
+  <input type="file" id="imageInput" accept="image/png,image/jpeg,image/webp,image/gif" multiple class="hidden">
+  <input type="file" id="projectInput" accept="application/json,.json" class="hidden">
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const STORAGE_KEY = 'mosaic-studio-projects-v1';
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+  const deepClone = value => JSON.parse(JSON.stringify(value));
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[ch]));
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+  const nowLabel = date => new Date(date || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  let activeDoc = null;
+  let activePageId = null;
+  let selectedId = null;
+  let activeTab = 'templates';
+  let inspectorMode = 'properties';
+  let templateQuery = '';
+  let templateCategory = 'All';
+  let zoom = 100;
+  let undoStack = [];
+  let redoStack = [];
+  let dragState = null;
+  let saveTimer = null;
+  let toastTimer = null;
+
+  const palette = ['#20231d','#d7f36b','#f5f5ef','#e9e5dc','#d9e4c2','#ecb8a4','#f2ce78','#e0e8f0','#eadbf4','#bdc7a7','#ae4b3f','#6d8054','#343d55','#ffffff','#000000'];
+
+  const t = (name, text, x, y, w, h, fontSize, fill, fontWeight = 700, extra = {}) => ({id:uid(), type:'text', name, text, x, y, w, h, fontSize, fill, fontWeight, fontFamily:'Arial, Helvetica, sans-serif', align:'left', lineHeight:1.08, opacity:1, rotation:0, locked:false, visible:true, ...extra});
+  const r = (name, x, y, w, h, fill, extra = {}) => ({id:uid(), type:'rect', name, x, y, w, h, fill, radius:0, opacity:1, rotation:0, locked:false, visible:true, ...extra});
+  const e = (name, x, y, w, h, fill, extra = {}) => ({id:uid(), type:'ellipse', name, x, y, w, h, fill, opacity:1, rotation:0, locked:false, visible:true, ...extra});
+  const line = (name, x, y, w, h, fill, extra = {}) => ({id:uid(), type:'line', name, x, y, w, h, fill, strokeWidth:3, opacity:1, rotation:0, locked:false, visible:true, ...extra});
+  const makePage = (name, width, height, bg, elements = []) => ({id:uid(), name, width, height, bg, elements});
+  const templates = [
+    {id:'manifesto', name:'Make it happen', category:'Posters', size:'1080 × 1350', page:()=>makePage('Page 1',1080,1350,'#e7ebdd',[
+      e('Accent orb',730,-110,500,500,'#d7f36b'), t('Series label','MOSAIC / FIELD NOTES',68,76,600,28,20,'#59604e',800,{letterSpacing:3}),
+      t('Main headline','MAKE IT\nHAPPEN.',68,245,875,650,145,'#20231d',900,{lineHeight:.9}),
+      line('Headline rule',70,925,935,0,'#20231d',{strokeWidth:3}), t('Supporting copy','Good ideas are built one deliberate move at a time.',70,980,770,100,34,'#4f5748',500,{lineHeight:1.3}),
+      r('Footer label',70,1190,265,76,'#20231d',{radius:7}), t('Footer label text','START WHERE YOU ARE  ↗',89,1216,235,30,17,'#d7f36b',800), t('Page number','01 / 04',846,1228,160,22,17,'#6a7260',700,{align:'right'})
+    ])},
+    {id:'summer', name:'The summer edit', category:'Social', size:'1080 × 1350', page:()=>makePage('Page 1',1080,1350,'#f2ce78',[
+      e('Sunburst',660,65,350,350,'#f6e7b7'), e('Sun core',760,165,150,150,'#e5a05c'), t('Top label','THE SUMMER EDIT',74,90,500,30,20,'#4b3926',800,{letterSpacing:4}),
+      t('Discount','40%',68,265,770,335,220,'#25291f',900,{lineHeight:.9}), t('Offer label','OFF EVERYTHING',82,610,730,80,56,'#25291f',800),
+      r('CTA pill',80,770,370,91,'#25291f',{radius:45}), t('CTA','SHOP THE DROP  ↗',113,799,320,34,23,'#f2ce78',800),
+      t('Fine print','ONLINE ONLY · LIMITED RUN',82,1213,620,24,17,'#594a35',700,{letterSpacing:2}), t('Edition','SS / 26',820,1210,165,30,20,'#594a35',800,{align:'right'})
+    ])},
+    {id:'quote', name:'Quiet confidence', category:'Quotes', size:'1080 × 1080', page:()=>makePage('Page 1',1080,1080,'#252b24',[
+      e('Decorative circle',720,650,520,520,'#45533a'), t('Quotation mark','“',73,130,175,180,200,'#d7f36b',900),
+      t('Quote','You do not need\nmore noise.\nYou need a point\nof view.',84,295,900,485,74,'#f4f2e8',800,{lineHeight:1.12}),
+      line('Accent line',88,840,120,0,'#d7f36b',{strokeWidth:6}), t('Attribution','NOTES ON MAKING · VOL. 01',88,900,750,35,20,'#c0c7b8',700,{letterSpacing:2})
+    ])},
+    {id:'thumbnail', name:'Creator thumbnail', category:'Video', size:'1920 × 1080', page:()=>makePage('Page 1',1920,1080,'#d7f36b',[
+      e('Backdrop shape',1240,-160,880,880,'#20231d'), e('Backdrop ring',1390,0,590,590,'#d7f36b',{stroke:'#d7f36b',strokeWidth:28}),
+      t('Top label','THE CREATOR PLAYBOOK',100,110,950,38,25,'#343b29',800,{letterSpacing:4}), t('Main headline','MAKE BETTER\nWORK.',100,270,1180,480,130,'#20231d',900,{lineHeight:.92}),
+      r('Badge',110,830,410,104,'#20231d',{radius:8}), t('Badge text','IN 30 MINUTES',143,863,350,38,26,'#d7f36b',800), t('Episode','EP. 04',100,990,500,28,20,'#3f4733',800,{letterSpacing:3}),
+      e('Small accent',1620,700,160,160,'#eea78f'), t('Watch label','WATCH NOW ↗',1430,890,380,40,25,'#f4f4ed',800,{align:'center'})
+    ])},
+    {id:'event', name:'After hours', category:'Posters', size:'1080 × 1350', page:()=>makePage('Page 1',1080,1350,'#eee8de',[
+      t('Header','MOSAIC PRESENTS',74,82,570,30,19,'#555b4d',800,{letterSpacing:4}), e('Moon',615,170,390,390,'#d9e1cb'), e('Moon shadow',735,155,390,390,'#eee8de'),
+      t('Event name','AFTER\nHOURS',70,285,850,420,133,'#20231d',900,{lineHeight:.86}), line('Divider',76,785,920,0,'#20231d',{strokeWidth:3}),
+      t('Event date','FRIDAY  ·  20:30',78,825,580,36,22,'#a25240',800,{letterSpacing:2}), t('Location','THE OLD PRINTWORKS\nAMRITSAR / PUNJAB',78,892,610,100,26,'#515747',650,{lineHeight:1.35}),
+      t('Tickets','RSVP / LIMITED ENTRY',78,1200,600,32,18,'#555b4d',800,{letterSpacing:2}), t('Number','NO. 009',825,1200,170,30,18,'#555b4d',800,{align:'right'})
+    ])},
+    {id:'launch', name:'Product launch', category:'Social', size:'1080 × 1350', page:()=>makePage('Page 1',1080,1350,'#f7f7f1',[
+      t('Brand','OBJECTS FOR EVERYDAY',72,75,730,30,18,'#72776c',800,{letterSpacing:3}), r('Product panel',72,160,936,680,'#dfe8d0',{radius:12}),
+      e('Orb 1',200,260,410,410,'#f4c3a7'), e('Orb 2',440,430,340,340,'#a5b78a'), r('Product detail',730,250,170,400,'#31372b',{radius:75}), e('Product cap',750,205,130,105,'#4b5840'),
+      t('Drop label','JUST DROPPED',78,905,490,28,19,'#79816d',800,{letterSpacing:3}), t('Product title','A better kind\nof everyday.',74,955,900,210,64,'#242820',850,{lineHeight:1.08}),
+      t('Footer','DESIGNED TO BE USED. MADE TO BE KEPT.',76,1230,750,32,17,'#6a7162',750,{letterSpacing:1}), t('Arrow','↗',920,1213,80,50,36,'#a25240',800,{align:'right'})
+    ])},
+    {id:'deck', name:'Presentation cover', category:'Presentations', size:'1920 × 1080', page:()=>makePage('Page 1',1920,1080,'#f7f7f1',[
+      r('Left field',0,0,640,1080,'#d7f36b'), t('Presentation series','MOSAIC / STRATEGY NOTES',90,95,510,34,20,'#343b29',800,{letterSpacing:3}),
+      t('Big title','Build a\nclearer brand.',90,280,500,440,76,'#20231d',900,{lineHeight:1.03}), t('Edition','2026 EDITION',90,920,480,34,19,'#414737',800,{letterSpacing:3}),
+      t('Right eyebrow','A PRACTICAL FIELD GUIDE',760,295,850,34,20,'#808679',800,{letterSpacing:4}), t('Right title','Attention is\nnot the goal.\nMeaning is.',760,390,1020,320,69,'#20231d',850,{lineHeight:1.14}),
+      line('Side rule',760,810,840,0,'#d5d9ce',{strokeWidth:2}), t('Subtitle','Positioning · Visual systems · Clear communication',760,860,1000,65,27,'#696f62',500)
+    ])},
+    {id:'business', name:'Studio business card', category:'Print', size:'1050 × 600', page:()=>makePage('Page 1',1050,600,'#20231d',[
+      e('Logo dot',70,75,66,66,'#d7f36b'), t('Brand initials','M',87,87,42,45,38,'#20231d',900,{align:'center'}), t('Name','YOUR NAME',72,235,550,65,52,'#f7f7f1',850),
+      t('Role','DESIGNER / CREATIVE PARTNER',75,306,570,32,19,'#b8c0ad',700,{letterSpacing:2}), line('rule',75,380,900,0,'#4e5548',{strokeWidth:2}),
+      t('Email','hello@yourstudio.com',75,427,460,30,20,'#e5e9dc',500), t('Website','yourstudio.com',75,470,450,30,20,'#d7f36b',700), t('Location','AMRITSAR · INDIA',700,470,270,30,16,'#aeb7a2',700,{align:'right',letterSpacing:2})
+    ])}
+  ];
+
+  function wrapText(text, width, fontSize) {
+    const maxChars = Math.max(2, Math.floor(width / Math.max(fontSize * .55, 1)));
+    const sourceLines = String(text ?? '').split('\n');
+    const out = [];
+    sourceLines.forEach(source => {
+      if (!source.length) { out.push(''); return; }
+      const words = source.split(/\s+/);
+      let current = '';
+      words.forEach(word => {
+        const candidate = current ? current + ' ' + word : word;
+        if (candidate.length > maxChars && current) { out.push(current); current = word; }
+        else current = candidate;
+      });
+      if (current) out.push(current);
+    });
+    return out;
+  }
+  function objectSVG(obj, withEvents = false) {
+    if (obj.visible === false) return '';
+    const x = Number(obj.x) || 0, y = Number(obj.y) || 0, w = Math.max(1, Number(obj.w) || 1), h = Math.max(1, Number(obj.h) || 1);
+    const transform = `translate(${x} ${y}) rotate(${Number(obj.rotation)||0} ${w/2} ${h/2})`;
+    const opacity = clamp(Number(obj.opacity ?? 1), 0, 1);
+    const idAttr = withEvents ? ` data-object-id="${esc(obj.id)}"` : '';
+    let inner = '';
+    if (obj.type === 'text') {
+      const fs = Math.max(1, Number(obj.fontSize)||32);
+      const lines = wrapText(obj.text || '', w, fs);
+      const align = obj.align || 'left';
+      const anchor = align === 'center' ? 'middle' : align === 'right' ? 'end' : 'start';
+      const tx = align === 'center' ? w/2 : align === 'right' ? w : 0;
+      const dy = fs * (Number(obj.lineHeight) || 1.15);
+      const startY = fs * .91;
+      inner = `<text x="${tx}" y="${startY}" fill="${esc(obj.fill||'#20231d')}" font-family="${esc(obj.fontFamily||'Arial, Helvetica, sans-serif')}" font-size="${fs}" font-weight="${Number(obj.fontWeight)||500}" text-anchor="${anchor}" letter-spacing="${Number(obj.letterSpacing)||0}">${lines.map((ln,i)=>`<tspan x="${tx}" y="${startY+i*dy}">${esc(ln)}</tspan>`).join('')}</text>`;
+    } else if (obj.type === 'rect') {
+      inner = `<rect x="0" y="0" width="${w}" height="${h}" rx="${clamp(Number(obj.radius)||0,0,Math.min(w,h)/2)}" fill="${esc(obj.fill||'#d7f36b')}" ${obj.stroke?`stroke="${esc(obj.stroke)}" stroke-width="${Number(obj.strokeWidth)||2}"`:''}/>`;
+    } else if (obj.type === 'ellipse') {
+      inner = `<ellipse cx="${w/2}" cy="${h/2}" rx="${w/2}" ry="${h/2}" fill="${esc(obj.fill||'#d7f36b')}" ${obj.stroke?`stroke="${esc(obj.stroke)}" stroke-width="${Number(obj.strokeWidth)||2}"`:''}/>`;
+    } else if (obj.type === 'line') {
+      inner = `<line x1="0" y1="${h/2}" x2="${w}" y2="${h/2}" stroke="${esc(obj.fill||'#20231d')}" stroke-width="${Number(obj.strokeWidth)||3}" stroke-linecap="round"/>`;
+    } else if (obj.type === 'triangle') {
+      inner = `<polygon points="${w/2},0 ${w},${h} 0,${h}" fill="${esc(obj.fill||'#d7f36b')}"/>`;
+    } else if (obj.type === 'image' && obj.src) {
+      inner = `<image href="${esc(obj.src)}" x="0" y="0" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet"/>`;
+    }
+    return `<g transform="${transform}" opacity="${opacity}"${idAttr} style="${withEvents?'cursor:move;':''}">${inner}</g>`;
+  }
+  function pageSVG(page, withEvents = false, forExport = false) {
+    const w = Math.max(1, Number(page.width)||1080), h = Math.max(1, Number(page.height)||1350);
+    const viewObjects = (page.elements||[]).map(obj=>objectSVG(obj,withEvents)).join('');
+    const selected = !forExport && withEvents ? getSelected(page) : null;
+    let handles = '';
+    if (selected && selected.visible !== false) {
+      const sw = Number(selected.w)||1, sh = Number(selected.h)||1;
+      const transform = `translate(${selected.x} ${selected.y}) rotate(${Number(selected.rotation)||0} ${sw/2} ${sh/2})`;
+      handles = `<g transform="${transform}" pointer-events="none"><rect x="-3" y="-3" width="${sw+6}" height="${sh+6}" fill="none" stroke="#87a933" stroke-width="3" stroke-dasharray="8 5"/><rect x="${sw-8}" y="${sh-8}" width="16" height="16" rx="3" fill="#d7f36b" stroke="#526523" stroke-width="2"/></g><rect data-action="resize" data-object-id="${esc(selected.id)}" x="${selected.x+selected.w-19}" y="${selected.y+selected.h-19}" width="38" height="38" fill="transparent" style="cursor:nwse-resize"/>`;
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Design page"><rect x="0" y="0" width="${w}" height="${h}" fill="${esc(page.bg||'#ffffff')}"/>${viewObjects}${handles}</svg>`;
+  }
+  function getSelected(page = currentPage()) { return page?.elements?.find(obj => obj.id === selectedId) || null; }
+  function currentPage() { return activeDoc?.pages?.find(page=>page.id===activePageId) || activeDoc?.pages?.[0] || null; }
+  function normalizeTemplatePage(page) {
+    const next = deepClone(page); next.id = uid(); next.elements = next.elements.map(obj=>({...obj,id:uid()})); return next;
+  }
+  function templatePreview(template, className='') {
+    const page = template.page();
+    const scale = Math.min(1, 112/page.width, 100/page.height);
+    return `<div class="${className}">${pageSVG(page,false,true).replace(`width="${page.width}" height="${page.height}"`,`width="${Math.round(page.width*scale)}" height="${Math.round(page.height*scale)}"`)}</div>`;
+  }
+  function readProjects() {
+    try { const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); return Array.isArray(value) ? value : []; }
+    catch { return []; }
+  }
+  function writeProjects(projects) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+  }
+  function newDocument(template = null, width = 1080, height = 1350) {
+    const page = template ? normalizeTemplatePage(template.page()) : makePage('Page 1', width, height, '#ffffff', []);
+    activeDoc = { id: uid(), name: template ? template.name : 'Untitled design', createdAt: Date.now(), updatedAt: Date.now(), pages:[page] };
+    activePageId = page.id; selectedId = null; undoStack = []; redoStack = []; zoom = 100;
+    enterEditor();
+    if (template) showToast(`Started from “${template.name}”`);
+  }
+  function enterEditor() {
+    document.body.classList.remove('screen-dashboard');
+    $('#projectTitle').value = activeDoc.name;
+    activeTab = 'templates'; inspectorMode = 'properties';
+    $$('.rail-btn[data-tab]').forEach(btn=>btn.classList.toggle('active',btn.dataset.tab===activeTab));
+    renderLeftPanel(); renderEditor(); renderUndoButtons(); scheduleSave();
+  }
+  function goDashboard() {
+    if (activeDoc) saveCurrent(true);
+    document.body.classList.add('screen-dashboard');
+    renderDashboard();
+  }
+  function renderDashboard() {
+    $('#dashboardTemplates').innerHTML = templates.map(temp=>`<button class="template-card" data-template="${temp.id}">${templatePreview(temp,'template-preview')}<div class="template-meta"><strong>${esc(temp.name)}</strong><small>${esc(temp.category)} · ${esc(temp.size)}</small></div></button>`).join('');
+    const projects = readProjects().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+    $('#recentCount').textContent = projects.length ? `${projects.length} saved design${projects.length===1?'':'s'}` : 'Saved in this browser';
+    if (!projects.length) {
+      $('#recentGrid').innerHTML = `<div class="empty-recent"><div class="empty-icon">✳</div><div><strong>Your next idea goes here.</strong><br>Create a design or choose a template. Projects save automatically in this browser.</div></div>`;
+    } else {
+      $('#recentGrid').innerHTML = projects.slice(0,8).map(doc=>{
+        const page = doc.pages?.[0] || makePage('Page 1',1080,1350,'#fff',[]);
+        const ratio = Math.min(1, 82/page.width, 82/page.height);
+        const preview = pageSVG(page,false,true).replace(`width="${page.width}" height="${page.height}"`, `width="${Math.round(page.width*ratio)}" height="${Math.round(page.height*ratio)}"`);
+        return `<button class="recent-card" data-open-project="${esc(doc.id)}"><div class="recent-thumb">${preview}</div><div class="recent-meta"><div><strong>${esc(doc.name||'Untitled design')}</strong><small>${doc.pages?.length||1} page${(doc.pages?.length||1)===1?'':'s'} · Edited ${nowLabel(doc.updatedAt)}</small></div><span>↗</span></div></button>`;
+      }).join('');
+    }
+  }
+  function renderLeftPanel() {
+    const titles = {templates:['Templates','Start from a layout, then edit every element.'],elements:['Elements','Add shapes, lines and simple decorative marks.'],text:['Text','Create a typographic hierarchy for your design.'],uploads:['Uploads','Bring your own images into the canvas.'],background:['Background','Change the page surface or set a custom color.']};
+    $('#leftPanelTitle').textContent = titles[activeTab][0]; $('#leftPanelSub').textContent = titles[activeTab][1];
+    if (activeTab === 'templates') {
+      const cats = ['All', ...new Set(templates.map(temp=>temp.category))];
+      const matches = templates.filter(temp=>(templateCategory==='All'||temp.category===templateCategory)&&temp.name.toLowerCase().includes(templateQuery.toLowerCase()));
+      $('#leftPanelContent').innerHTML = `<input class="searchbox" id="templateSearch" placeholder="⌕  Search templates" value="${esc(templateQuery)}" aria-label="Search templates"><div class="pills">${cats.map(cat=>`<button class="pill ${cat===templateCategory?'active':''}" data-category="${esc(cat)}">${esc(cat)}</button>`).join('')}</div><div class="panel-template-grid">${matches.map(temp=>`<button class="panel-template" data-template="${temp.id}">${templatePreview(temp,'tiny-preview')}<span>${esc(temp.name)}</span></button>`).join('')||'<p class="selection-empty">No templates match that search.</p>'}</div><div class="asset-note">Templates are editable starter compositions. All text and shapes can be changed independently.</div>`;
+      $('#templateSearch').addEventListener('input', event=>{ templateQuery = event.target.value; const start = event.target.selectionStart; renderLeftPanel(); const next=$('#templateSearch'); next.focus(); next.setSelectionRange(start,start); });
+      $$('[data-category]', $('#leftPanelContent')).forEach(btn=>btn.addEventListener('click',()=>{templateCategory=btn.dataset.category;renderLeftPanel();}));
+    } else if (activeTab === 'elements') {
+      $('#leftPanelContent').innerHTML = `<div class="panel-label">Basic shapes</div><div class="control-grid"><button class="tool-card" data-add="rect"><span class="tool-symbol">▰</span>Rectangle</button><button class="tool-card" data-add="ellipse"><span class="tool-symbol">●</span>Circle</button><button class="tool-card" data-add="triangle"><span class="tool-symbol">▲</span>Triangle</button><button class="tool-card" data-add="line"><span class="tool-symbol">╱</span>Line</button></div><div class="panel-label">Decorative marks</div><div class="control-grid"><button class="tool-card" data-sticker="✳"><span class="tool-symbol">✳</span>Starburst</button><button class="tool-card" data-sticker="✦"><span class="tool-symbol">✦</span>Spark</button><button class="tool-card" data-sticker="↗"><span class="tool-symbol">↗</span>Arrow</button><button class="tool-card" data-sticker="+"><span class="tool-symbol">＋</span>Plus</button></div><div class="panel-label">Quick actions</div><div class="action-stack"><button class="btn" id="elementsUploadBtn">＋ Upload an image</button><button class="btn" id="elementsBgBtn">◒ Edit background</button></div><p class="asset-note">Shapes remain vector objects, so you can recolor and resize them without pixelation.</p>`;
+    } else if (activeTab === 'text') {
+      $('#leftPanelContent').innerHTML = `<button class="text-choice" data-text-preset="heading"><strong style="font-size:22px">Add a heading</strong><small>A strong lead line or poster headline.</small></button><button class="text-choice" data-text-preset="subheading"><strong style="font-size:16px">Add a subheading</strong><small>Useful for supporting copy.</small></button><button class="text-choice" data-text-preset="body"><strong style="font-size:12px;font-weight:500">Add body text</strong><small>For captions, details and fine print.</small></button><div class="panel-label">Text pairing</div><div class="asset-note">Tip: use one expressive headline and one quieter supporting style. Select text on the canvas to edit its wording, typeface, size and color.</div>`;
+    } else if (activeTab === 'uploads') {
+      const images = currentPage()?.elements?.filter(obj=>obj.type==='image') || [];
+      $('#leftPanelContent').innerHTML = `<label class="upload-drop" for="imageInput"><span class="upload-icon">↑</span><strong>Upload images</strong><small>PNG, JPG, WEBP or GIF<br>Maximum 5 MB per file</small></label><div class="panel-label">Images on this page (${images.length})</div>${images.length ? `<div class="layer-list">${images.map(obj=>`<button class="layer-item" data-select-layer="${obj.id}"><span class="layer-kind">▧</span><span class="layer-name">${esc(obj.name)}</span></button>`).join('')}</div>` : `<p class="asset-note">Uploaded images are embedded in your project file and saved in this browser. Export the JSON project to move it elsewhere.</p>`}`;
+    } else if (activeTab === 'background') {
+      $('#leftPanelContent').innerHTML = `<div class="panel-label">Studio palette</div><div class="color-grid">${palette.map(color=>`<button class="swatch" data-bg-color="${color}" style="background:${color}" title="${color}" aria-label="Set background ${color}"></button>`).join('')}</div><div class="panel-label">Custom background</div><div class="form-row"><label for="bgColor">Page color</label><div class="color-control-wrap"><input type="color" id="bgColor" value="${esc(currentPage()?.bg||'#ffffff')}"><span>${esc(currentPage()?.bg||'#ffffff')}</span></div></div><button class="btn" id="clearBackground">Reset to white</button><p class="asset-note">Background color belongs to the current page. Use a shape if you need several color fields within one design.</p>`;
+      $('#bgColor').addEventListener('input', event=>{ if (!currentPage()) return; pushHistory(); currentPage().bg=event.target.value; event.target.nextElementSibling.textContent=event.target.value; renderCanvas(); scheduleSave(); });
+    }
+    $$('[data-add]', $('#leftPanelContent')).forEach(btn=>btn.addEventListener('click',()=>addShape(btn.dataset.add)));
+    $$('[data-sticker]', $('#leftPanelContent')).forEach(btn=>btn.addEventListener('click',()=>addSticker(btn.dataset.sticker)));
+    $$('[data-text-preset]', $('#leftPanelContent')).forEach(btn=>btn.addEventListener('click',()=>addText(btn.dataset.textPreset)));
+    $$('[data-template]', $('#leftPanelContent')).forEach(btn=>btn.addEventListener('click',()=>applyTemplate(templates.find(temp=>temp.id===btn.dataset.template))));
+    $$('[data-select-layer]', $('#leftPanelContent')).forEach(btn=>btn.addEventListener('click',()=>selectObject(btn.dataset.selectLayer)));
+    $$('[data-bg-color]', $('#leftPanelContent')).forEach(btn=>btn.addEventListener('click',()=>{ pushHistory(); currentPage().bg=btn.dataset.bgColor; renderLeftPanel(); renderCanvas(); scheduleSave(); showToast('Page background updated'); }));
+    const uploadBtn=$('#elementsUploadBtn'); if (uploadBtn) uploadBtn.addEventListener('click',()=>$('#imageInput').click());
+    const bgBtn=$('#elementsBgBtn'); if (bgBtn) bgBtn.addEventListener('click',()=>setTab('background'));
+    const clearBg=$('#clearBackground'); if (clearBg) clearBg.addEventListener('click',()=>{pushHistory();currentPage().bg='#ffffff';renderLeftPanel();renderCanvas();scheduleSave();});
+  }
+  function setTab(tab) {
+    activeTab = tab; $$('.rail-btn[data-tab]').forEach(btn=>btn.classList.toggle('active',btn.dataset.tab===tab)); renderLeftPanel();
+  }
+  function renderEditor() {
+    if (!activeDoc) return;
+    $('#projectTitle').value = activeDoc.name;
+    $('#canvasLabel').textContent = `${currentPage().name || 'Page'} · ${activeDoc.name}`;
+    $('#canvasSizeLabel').textContent = `${currentPage().width} × ${currentPage().height} px`;
+    $('#zoomValue').textContent = `${zoom}%`;
+    renderCanvas(); renderPages(); renderInspector(); renderUndoButtons();
+  }
+  function renderCanvas() {
+    const page = currentPage(); if (!page) return;
+    const canvas = $('#design-canvas');
+    const stage = $('#stageScroll');
+    const fitW = Math.max(180, stage.clientWidth - 90);
+    const fitH = Math.max(180, stage.clientHeight - 90);
+    const base = Math.min(fitW / page.width, fitH / page.height, 1);
+    const scale = base * zoom / 100;
+    const dispW = Math.max(1, Math.round(page.width * scale)); const dispH = Math.max(1, Math.round(page.height * scale));
+    canvas.setAttribute('width', dispW); canvas.setAttribute('height', dispH); canvas.setAttribute('viewBox',`0 0 ${page.width} ${page.height}`);
+    canvas.innerHTML = `<rect x="0" y="0" width="${page.width}" height="${page.height}" fill="${esc(page.bg||'#ffffff')}"/>${page.elements.map(obj=>objectSVG(obj,true)).join('')}`;
+    const selected = getSelected(page);
+    if (selected && selected.visible !== false) {
+      const w=Number(selected.w)||1, h=Number(selected.h)||1; const transform=`translate(${selected.x} ${selected.y}) rotate(${Number(selected.rotation)||0} ${w/2} ${h/2})`;
+      canvas.insertAdjacentHTML('beforeend', `<g transform="${transform}" pointer-events="none"><rect x="-3" y="-3" width="${w+6}" height="${h+6}" fill="none" stroke="#87a933" stroke-width="3" stroke-dasharray="8 5"/><rect x="${w-8}" y="${h-8}" width="16" height="16" rx="3" fill="#d7f36b" stroke="#526523" stroke-width="2"/></g><rect data-action="resize" data-object-id="${esc(selected.id)}" x="${selected.x+selected.w-19}" y="${selected.y+selected.h-19}" width="38" height="38" fill="transparent" style="cursor:nwse-resize"/>`);
+    }
+    $('#stageShadow').style.width = `${dispW}px`; $('#stageShadow').style.height = `${dispH}px`;
+    $('#zoomValue').textContent = `${zoom}%`;
+    canvas.setAttribute('aria-label', `${activeDoc.name}, ${page.name}, ${page.width} by ${page.height} pixels`);
+    canvas.onpointerdown = onCanvasPointerDown;
+    $('#canvasLabel').textContent = `${page.name || 'Page'} · ${activeDoc.name}`;
+    $('#canvasSizeLabel').textContent = `${page.width} × ${page.height} px`;
+  }
+  function renderPages() {
+    const pages = activeDoc.pages;
+    $('#pageCount').textContent = pages.length;
+    $('#pageCards').innerHTML = pages.map((page,index)=>{
+      const scale = Math.min(1, 55/page.width, 37/page.height);
+      const svg = pageSVG(page,false,true).replace(`width="${page.width}" height="${page.height}"`,`width="${Math.round(page.width*scale)}" height="${Math.round(page.height*scale)}"`);
+      return `<button class="page-card ${page.id===activePageId?'active':''}" data-page-id="${page.id}" title="${esc(page.name)}">${svg}<span>${index+1} · ${esc(page.name)}</span></button>`;
+    }).join('') + `<button class="page-add" id="addPageBtn" title="Add page">＋</button>`;
+    $$('[data-page-id]', $('#pageCards')).forEach(btn=>btn.addEventListener('click',()=>{activePageId=btn.dataset.pageId;selectedId=null;renderEditor();}));
+    $('#addPageBtn').addEventListener('click',addPage);
+  }
+  function renderInspector() {
+    $('#propertiesTab').classList.toggle('active', inspectorMode==='properties'); $('#layersTab').classList.toggle('active', inspectorMode==='layers');
+    const root = $('#inspectorContent');
+    if (inspectorMode === 'layers') {
+      const objs = [...currentPage().elements].reverse();
+      root.innerHTML = `<div class="layers-heading"><strong>Page layers · ${objs.length}</strong><button class="btn small" id="newLayerText">＋ Text</button></div><div class="layer-list">${objs.map(obj=>`<div class="layer-item ${obj.id===selectedId?'selected':''}" data-layer-row="${obj.id}"><button class="layer-mini" data-layer-visible="${obj.id}" title="${obj.visible===false?'Show':'Hide'} layer">${obj.visible===false?'◌':'◉'}</button><span class="layer-kind">${obj.type==='text'?'T':obj.type==='image'?'▧':obj.type==='line'?'╱':'◈'}</span><span class="layer-name" title="${esc(obj.name)}">${esc(obj.name)}</span><button class="layer-mini" data-layer-lock="${obj.id}" title="${obj.locked?'Unlock':'Lock'} layer">${obj.locked?'▣':'◇'}</button></div>`).join('')||'<p class="selection-empty">This page is empty. Add a text box or shape to start creating.</p>'}</div><div class="asset-note">Layers are listed from front to back. Select one to edit it on the canvas.</div>`;
+      $$('[data-layer-row]',root).forEach(row=>row.addEventListener('click',event=>{if(event.target.closest('[data-layer-visible]')||event.target.closest('[data-layer-lock]'))return; selectedId=row.dataset.layerRow; renderCanvas(); renderInspector();}));
+      $$('[data-layer-visible]',root).forEach(btn=>btn.addEventListener('click',event=>{event.stopPropagation();const o=currentPage().elements.find(x=>x.id===btn.dataset.layerVisible);if(o){pushHistory();o.visible=o.visible===false;renderInspector();renderCanvas();scheduleSave();}}));
+      $$('[data-layer-lock]',root).forEach(btn=>btn.addEventListener('click',event=>{event.stopPropagation();const o=currentPage().elements.find(x=>x.id===btn.dataset.layerLock);if(o){pushHistory();o.locked=!o.locked;renderInspector();scheduleSave();}}));
+      $('#newLayerText').addEventListener('click',()=>addText('heading'));
+      return;
+    }
+    const obj = getSelected();
+    if (!obj) {
+      const page=currentPage();
+      root.innerHTML = `<div class="inspector-kicker">Page properties</div><div class="form-row"><label for="pageNameInput">Page name</label><input class="form-control" id="pageNameInput" value="${esc(page.name)}"></div><div class="form-two"><div class="form-row"><label>Width · px</label><input class="form-control" id="pageWidthInput" type="number" min="200" max="5000" value="${page.width}"></div><div class="form-row"><label>Height · px</label><input class="form-control" id="pageHeightInput" type="number" min="200" max="5000" value="${page.height}"></div></div><div class="form-row"><label>Background color</label><div class="color-control-wrap"><input type="color" id="inspectorBgColor" value="${esc(page.bg||'#ffffff')}"><span>${esc(page.bg||'#ffffff')}</span></div></div><div class="panel-label">Quick actions</div><div class="action-stack"><button class="btn" id="inspectorAddText">＋ Add a text box</button><button class="btn" id="inspectorAddShape">＋ Add a shape</button><button class="btn" id="inspectorLayers">☷ Open layers</button></div><div class="asset-note" style="margin-top:20px">Choose an object on the canvas to edit its position, size, color, and typography. All changes update the local project.</div>`;
+      $('#pageNameInput').addEventListener('change',event=>{pushHistory();page.name=event.target.value.trim()||'Untitled page';renderPages();renderCanvas();scheduleSave();});
+      $('#pageWidthInput').addEventListener('change',event=>resizePageDimension('width',event.target.value));
+      $('#pageHeightInput').addEventListener('change',event=>resizePageDimension('height',event.target.value));
+      $('#inspectorBgColor').addEventListener('input',event=>{pushHistory();page.bg=event.target.value;event.target.nextElementSibling.textContent=event.target.value;renderCanvas();scheduleSave();});
+      $('#inspectorAddText').addEventListener('click',()=>addText('heading')); $('#inspectorAddShape').addEventListener('click',()=>addShape('rect')); $('#inspectorLayers').addEventListener('click',()=>{inspectorMode='layers';renderInspector();});
+      return;
+    }
+    const color = /^#[0-9a-f]{6}$/i.test(obj.fill||'')?obj.fill:'#20231d';
+    root.innerHTML = `<div class="inspector-kicker">${esc(obj.type)} properties</div><div class="form-row"><label for="objectName">Layer name</label><input class="form-control" id="objectName" value="${esc(obj.name)}"></div><div class="form-two"><div class="form-row"><label for="posX">X position</label><input class="form-control" id="posX" type="number" value="${Math.round(obj.x)}"></div><div class="form-row"><label for="posY">Y position</label><input class="form-control" id="posY" type="number" value="${Math.round(obj.y)}"></div></div><div class="form-two"><div class="form-row"><label for="objW">Width</label><input class="form-control" id="objW" type="number" min="10" value="${Math.round(obj.w)}"></div><div class="form-row"><label for="objH">Height</label><input class="form-control" id="objH" type="number" min="10" value="${Math.round(obj.h)}"></div></div><div class="form-row"><label for="objRotation">Rotation <span id="rotationValue">${Number(obj.rotation)||0}°</span></label><input class="form-control" style="padding:0;height:25px" id="objRotation" type="range" min="-180" max="180" value="${Number(obj.rotation)||0}"></div><div class="form-row"><label>Fill color</label><div class="color-control-wrap"><input type="color" id="objFill" value="${color}"><span id="fillHex">${color}</span></div></div><div class="form-row"><label for="objOpacity">Opacity <span id="opacityValue">${Math.round((Number(obj.opacity??1))*100)}%</span></label><input class="form-control" style="padding:0;height:25px" id="objOpacity" type="range" min="0" max="100" value="${Math.round((Number(obj.opacity??1))*100)}"></div>${obj.type==='text'?`<div class="panel-label">Typography</div><div class="form-row"><label for="objText">Text content</label><textarea class="form-control textarea" id="objText">${esc(obj.text)}</textarea></div><div class="form-row"><label for="objFont">Typeface</label><select class="form-control" id="objFont"><option value="Arial, Helvetica, sans-serif">Arial / Helvetica</option><option value="Georgia, serif">Georgia</option><option value="'Courier New', monospace">Courier New</option><option value="Verdana, sans-serif">Verdana</option><option value="'Trebuchet MS', sans-serif">Trebuchet MS</option></select></div><div class="form-two"><div class="form-row"><label for="objFontSize">Font size</label><input class="form-control" id="objFontSize" type="number" min="6" max="300" value="${Number(obj.fontSize)||32}"></div><div class="form-row"><label for="objFontWeight">Weight</label><select class="form-control" id="objFontWeight"><option value="400" ${Number(obj.fontWeight)<=400?'selected':''}>Regular</option><option value="600" ${Number(obj.fontWeight)>400&&Number(obj.fontWeight)<800?'selected':''}>Medium</option><option value="800" ${Number(obj.fontWeight)>=800?'selected':''}>Bold</option><option value="900" ${Number(obj.fontWeight)>=900?'selected':''}>Black</option></select></div></div><div class="form-row"><label for="objAlign">Alignment</label><select class="form-control" id="objAlign"><option value="left" ${obj.align==='left'?'selected':''}>Left</option><option value="center" ${obj.align==='center'?'selected':''}>Center</option><option value="right" ${obj.align==='right'?'selected':''}>Right</option></select></div><div class="form-row"><label for="objLineHeight">Line height <span id="lineHeightValue">${Number(obj.lineHeight)||1.15}</span></label><input class="form-control" style="padding:0;height:25px" id="objLineHeight" type="range" min="0.8" max="2" step="0.05" value="${Number(obj.lineHeight)||1.15}"></div>`:''}<div class="panel-label">Arrange</div><div class="form-two"><button class="btn small" id="layerForward">Bring forward ↑</button><button class="btn small" id="layerBackward">Send backward ↓</button><button class="btn small" id="duplicateObject">Duplicate ⧉</button><button class="btn small" id="deleteObject" style="color:#9a4238">Delete ×</button></div><div class="asset-note">Drag an object on the canvas to move it. Use the lower-right handle to resize. Keyboard: Ctrl/Cmd+D duplicate, Delete remove, arrow keys nudge.</div>`;
+    $('#objectName').addEventListener('change',event=>{pushHistory();obj.name=event.target.value.trim()||obj.type;renderInspector();renderPages();scheduleSave();});
+    ['posX','posY','objW','objH'].forEach((id,index)=>{const props=['x','y','w','h'];$('#'+id).addEventListener('focus',()=>historyOnceForField($('#'+id)));$('#'+id).addEventListener('change',event=>{const value=Number(event.target.value);if(Number.isFinite(value)){obj[props[index]]=props[index]==='w'||props[index]==='h'?clamp(value,10,5000):value;renderCanvas();scheduleSave();}});});
+    $('#objRotation').addEventListener('pointerdown',()=>pushHistory()); $('#objRotation').addEventListener('input',event=>{obj.rotation=Number(event.target.value);$('#rotationValue').textContent=obj.rotation+'°';renderCanvas();scheduleSave();});
+    $('#objFill').addEventListener('input',event=>{pushHistoryOnceForControl(event.target);obj.fill=event.target.value;$('#fillHex').textContent=obj.fill;renderCanvas();scheduleSave();});
+    $('#objOpacity').addEventListener('pointerdown',()=>pushHistory()); $('#objOpacity').addEventListener('input',event=>{obj.opacity=Number(event.target.value)/100;$('#opacityValue').textContent=event.target.value+'%';renderCanvas();scheduleSave();});
+    if (obj.type==='text') {
+      $('#objText').addEventListener('focus',()=>historyOnceForField($('#objText'))); $('#objText').addEventListener('input',event=>{obj.text=event.target.value;renderCanvas();scheduleSave();});
+      $('#objFont').value=obj.fontFamily||'Arial, Helvetica, sans-serif'; $('#objFont').addEventListener('change',event=>{pushHistory();obj.fontFamily=event.target.value;renderCanvas();scheduleSave();});
+      $('#objFontSize').addEventListener('focus',()=>historyOnceForField($('#objFontSize'))); $('#objFontSize').addEventListener('change',event=>{obj.fontSize=clamp(Number(event.target.value)||32,6,300);renderCanvas();scheduleSave();});
+      $('#objFontWeight').addEventListener('change',event=>{pushHistory();obj.fontWeight=Number(event.target.value);renderCanvas();scheduleSave();}); $('#objAlign').addEventListener('change',event=>{pushHistory();obj.align=event.target.value;renderCanvas();scheduleSave();});
+      $('#objLineHeight').addEventListener('pointerdown',()=>pushHistory()); $('#objLineHeight').addEventListener('input',event=>{obj.lineHeight=Number(event.target.value);$('#lineHeightValue').textContent=obj.lineHeight;renderCanvas();scheduleSave();});
+    }
+    $('#layerForward').addEventListener('click',()=>moveLayer(obj.id,1)); $('#layerBackward').addEventListener('click',()=>moveLayer(obj.id,-1)); $('#duplicateObject').addEventListener('click',()=>duplicateObject(obj.id)); $('#deleteObject').addEventListener('click',()=>deleteObject(obj.id));
+  }
+  function historyOnceForField(field) { if (field.dataset.historyPushed!=='1') { pushHistory(); field.dataset.historyPushed='1'; } }
+  function pushHistoryOnceForControl(control) { if(control.dataset.historyPushed!=='1'){pushHistory();control.dataset.historyPushed='1';} }
+  function renderUndoButtons() { $('#undoBtn').disabled = undoStack.length===0; $('#redoBtn').disabled=redoStack.length===0; }
+  function pushHistory() {
+    if (!activeDoc) return;
+    undoStack.push(JSON.stringify({doc:activeDoc, pageId:activePageId, selectedId}));
+    if (undoStack.length>60) undoStack.shift();
+    redoStack=[]; renderUndoButtons();
+  }
+  function restoreSnapshot(stackFrom, stackTo) {
+    if (!stackFrom.length) return;
+    stackTo.push(JSON.stringify({doc:activeDoc, pageId:activePageId, selectedId}));
+    const saved=JSON.parse(stackFrom.pop()); activeDoc=saved.doc; activePageId=saved.pageId; selectedId=saved.selectedId;
+    renderEditor(); scheduleSave();
+  }
+  function scheduleSave() {
+    if (!activeDoc) return;
+    $('#saveState').textContent=collab.roomId?'Saving locally + shared…':'Saving locally…';
+    clearTimeout(saveTimer); saveTimer=setTimeout(()=>{saveCurrent();if(collab.roomId&&!collab.applyingRemote){clearTimeout(collab.saveTimer);collab.saveTimer=setTimeout(()=>persistSharedDocument(false),800);}},450);
+  }
+  function saveCurrent(silent = false) {
+    if (!activeDoc) return;
+    clearTimeout(saveTimer); activeDoc.updatedAt=Date.now();
+    const projects=readProjects().filter(doc=>doc.id!==activeDoc.id);
+    projects.unshift(deepClone(activeDoc));
+    try { writeProjects(projects.slice(0,30)); $('#saveState').textContent='Saved locally ✓'; if (!silent) showToast('Saved in this browser'); }
+    catch (err) { $('#saveState').textContent='Local storage full'; showToast('Storage is full. Export the project JSON to protect your work.'); }
+    renderUndoButtons();
+  }
+  function showToast(message) { const toast=$('#toast'); toast.textContent=message; toast.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>toast.classList.remove('show'),2200); }
+  function addObject(obj) { pushHistory(); const page=currentPage(); page.elements.push(obj); selectedId=obj.id; inspectorMode='properties'; renderEditor(); scheduleSave(); showToast(`${obj.name} added`); }
+  function addText(preset='heading') {
+    const page=currentPage(); const styles={heading:{text:'Your headline',fontSize:64,fontWeight:900,w:page.width*.78,h:page.height*.24,y:page.height*.18,name:'Headline'},subheading:{text:'Make your message clear.',fontSize:34,fontWeight:650,w:page.width*.72,h:page.height*.16,y:page.height*.3,name:'Subheading'},body:{text:'Add a little detail here.',fontSize:22,fontWeight:500,w:page.width*.70,h:page.height*.16,y:page.height*.46,name:'Body copy'}};
+    const style=styles[preset]||styles.heading; addObject(t(style.name,style.text,page.width*.11,style.y,style.w,style.h,style.fontSize,'#20231d',style.fontWeight));
+  }
+  function addShape(type) {
+    const page=currentPage(), fill='#d7f36b', x=page.width*.38, y=page.height*.34;
+    const sizes={rect:[page.width*.25,page.height*.18],ellipse:[page.width*.20,page.width*.20],triangle:[page.width*.20,page.height*.20],line:[page.width*.35,8]}; const [w,h]=sizes[type]||sizes.rect;
+    const shape=type==='rect'?r('Rectangle',x,y,w,h,fill,{radius:10}):type==='ellipse'?e('Circle',x,y,w,h,fill):type==='triangle'?{id:uid(),type:'triangle',name:'Triangle',x,y,w,h,fill,opacity:1,rotation:0,visible:true,locked:false}:line('Line',x,y,w,h,'#20231d',{strokeWidth:5});
+    addObject(shape);
+  }
+  function addSticker(symbol) {
+    const page=currentPage(); const obj=t('Decorative mark',symbol,page.width*.42,page.height*.33,Math.min(page.width*.23,250),Math.min(page.height*.20,220),Math.min(page.width*.12,170),'#a25240',900,{align:'center',lineHeight:1}); addObject(obj);
+  }
+  function addImageData(src,name) {
+    const page=currentPage(); const obj={id:uid(),type:'image',name:name||'Uploaded image',src,x:page.width*.22,y:page.height*.2,w:page.width*.56,h:page.height*.42,opacity:1,rotation:0,visible:true,locked:false}; addObject(obj);
+  }
+  function applyTemplate(template) {
+    if(!template)return;
+    if(!activeDoc || document.body.classList.contains('screen-dashboard')) { newDocument(template); return; }
+    const page=normalizeTemplatePage(template.page());
+    if(activeDoc.pages.length===1 && currentPage().elements.length===0) { pushHistory(); activeDoc.pages[0]=page; activePageId=page.id; activeDoc.name=template.name; $('#projectTitle').value=activeDoc.name; selectedId=null; renderEditor(); scheduleSave(); showToast('Template applied'); }
+    else { pushHistory(); activeDoc.pages.push(page); activePageId=page.id; activeDoc.name=activeDoc.name||template.name; selectedId=null; renderEditor(); scheduleSave(); showToast('Template added as a new page'); }
+  }
+  function addPage() {
+    pushHistory(); const source=currentPage(); const page=makePage(`Page ${activeDoc.pages.length+1}`,source.width,source.height,'#ffffff',[]); activeDoc.pages.push(page);activePageId=page.id;selectedId=null;renderEditor();scheduleSave();
+  }
+  function duplicatePage() {
+    const source=currentPage(); if(!source)return; pushHistory(); const next=deepClone(source);next.id=uid();next.name=`${source.name} copy`;next.elements=next.elements.map(obj=>({...obj,id:uid(),name:obj.name}));activeDoc.pages.splice(activeDoc.pages.indexOf(source)+1,0,next);activePageId=next.id;selectedId=null;renderEditor();scheduleSave();showToast('Page duplicated');
+  }
+  function deletePage() {
+    if(activeDoc.pages.length===1){showToast('A design needs at least one page');return;}
+    pushHistory(); const index=activeDoc.pages.findIndex(page=>page.id===activePageId);activeDoc.pages=activeDoc.pages.filter(page=>page.id!==activePageId);activePageId=activeDoc.pages[Math.max(0,index-1)].id;selectedId=null;renderEditor();scheduleSave();showToast('Page removed');
+  }
+  function selectObject(id) { selectedId=id; inspectorMode='properties'; renderCanvas(); renderInspector(); }
+  function moveLayer(id, direction) {
+    const list=currentPage().elements, idx=list.findIndex(obj=>obj.id===id), next=idx+direction;
+    if(idx<0||next<0||next>=list.length)return; pushHistory(); [list[idx],list[next]]=[list[next],list[idx]]; renderCanvas();renderInspector();scheduleSave();
+  }
+  function duplicateObject(id) {
+    const list=currentPage().elements, obj=list.find(item=>item.id===id);if(!obj)return;pushHistory();const copy=deepClone(obj);copy.id=uid();copy.name=(obj.name||obj.type)+' copy';copy.x+=24;copy.y+=24;list.push(copy);selectedId=copy.id;renderEditor();scheduleSave();showToast('Object duplicated');
+  }
+  function deleteObject(id) { const list=currentPage().elements;const index=list.findIndex(item=>item.id===id);if(index<0)return;pushHistory();list.splice(index,1);selectedId=null;renderEditor();scheduleSave();showToast('Object deleted'); }
+  function resizePageDimension(which,value) {
+    const num=clamp(Number(value)||1080,200,5000);pushHistory();currentPage()[which]=num;renderEditor();scheduleSave();
+  }
+  function onCanvasPointerDown(event) {
+    if(!activeDoc)return;
+    if(event.button!==0)return;
+    const canvas=$('#design-canvas');const target=event.target.closest('[data-object-id]');
+    if(!target){selectedId=null;renderCanvas();renderInspector();return;}
+    const id=target.dataset.objectId;const obj=currentPage().elements.find(item=>item.id===id);if(!obj)return;
+    if(obj.locked){selectedId=id;renderCanvas();renderInspector();return;}
+    selectedId=id;inspectorMode='properties';
+    const rect=canvas.getBoundingClientRect(); const scaleX=currentPage().width/rect.width; const scaleY=currentPage().height/rect.height;
+    pushHistory();
+    dragState={id, action:target.dataset.action==='resize'?'resize':'move', startX:event.clientX,startY:event.clientY, ox:obj.x,oy:obj.y,ow:obj.w,oh:obj.h,scaleX,scaleY,moved:false};
+    renderCanvas();
+    renderInspector();
+    event.preventDefault();
+  }
+  window.addEventListener('pointermove',event=>{
+    if(!dragState||!activeDoc)return;
+    const obj=currentPage().elements.find(item=>item.id===dragState.id);if(!obj)return;
+    const dx=(event.clientX-dragState.startX)*dragState.scaleX, dy=(event.clientY-dragState.startY)*dragState.scaleY;
+    if(Math.abs(dx)+Math.abs(dy)>1)dragState.moved=true;
+    if(dragState.action==='move'){obj.x=Math.round(dragState.ox+dx);obj.y=Math.round(dragState.oy+dy);}
+    else {obj.w=Math.round(clamp(dragState.ow+dx,10,5000));obj.h=Math.round(clamp(dragState.oh+dy,10,5000));}
+    renderCanvas();
+  });
+  window.addEventListener('pointerup',()=>{if(dragState){if(dragState.moved)scheduleSave();dragState=null;renderInspector();}});
+
+  function changePageName(value){currentPage().name=value;}
+  function renderDownloadPageSVG(page) { return pageSVG(page,false,true); }
+  function downloadBlob(blob, filename) { const url=URL.createObjectURL(blob);const anchor=document.createElement('a');anchor.href=url;anchor.download=filename;document.body.appendChild(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(url),1500); }
+  function slugify(text) { return (text||'mosaic-design').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)||'mosaic-design'; }
+  function exportSVG() {
+    const page=currentPage();const markup=renderDownloadPageSVG(page);downloadBlob(new Blob([markup],{type:'image/svg+xml;charset=utf-8'}),`${slugify(activeDoc.name)}-page-${activeDoc.pages.indexOf(page)+1}.svg`);showToast('SVG exported');
+  }
+  function exportPNG() {
+    const page=currentPage();const markup=renderDownloadPageSVG(page);const blob=new Blob([markup],{type:'image/svg+xml;charset=utf-8'});const url=URL.createObjectURL(blob);const image=new Image();
+    image.onload=()=>{try{const canvas=document.createElement('canvas');canvas.width=page.width*2;canvas.height=page.height*2;const ctx=canvas.getContext('2d');ctx.scale(2,2);ctx.drawImage(image,0,0,page.width,page.height);canvas.toBlob(out=>{if(out)downloadBlob(out,`${slugify(activeDoc.name)}-page-${activeDoc.pages.indexOf(page)+1}.png`);else showToast('PNG export failed');URL.revokeObjectURL(url);},'image/png');}catch(err){URL.revokeObjectURL(url);showToast('Could not export this page as PNG');}};
+    image.onerror=()=>{URL.revokeObjectURL(url);showToast('Could not render this page as PNG');};image.src=url;
+  }
+  function exportPDF() {
+    const printWindow=window.open('','_blank');
+    if(!printWindow){showToast('Allow pop-ups to export a PDF');return;}
+    const pages=activeDoc.pages.map(page=>`<section class="sheet">${renderDownloadPageSVG(page)}</section>`).join('');
+    const title=esc(activeDoc.name);
+    printWindow.document.open();printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title><style>@page{margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;background:white}.sheet{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;page-break-after:always;break-after:page;overflow:hidden}.sheet:last-child{page-break-after:auto;break-after:auto}svg{width:auto;height:auto;max-width:100vw;max-height:100vh;object-fit:contain} @media print{.sheet{height:100vh;width:100vw}}</style></head><body>${pages}<script>window.onload=()=>setTimeout(()=>window.print(),350);<${'/script'}></body></html>`);printWindow.document.close();showToast('Print dialog opened — choose “Save as PDF”');
+  }
+  function exportJSON() { saveCurrent(true);downloadBlob(new Blob([JSON.stringify(activeDoc,null,2)],{type:'application/json;charset=utf-8'}),`${slugify(activeDoc.name)}.mosaic.json`);showToast('Editable project exported'); }
+  function importJSON(file) {
+    if(!file)return;
+    if(file.size>15*1024*1024){showToast('Project file is too large (15 MB max)');return;}
+    const reader=new FileReader();reader.onload=()=>{try{const doc=JSON.parse(reader.result);if(!doc||!Array.isArray(doc.pages)||!doc.pages.length||doc.pages.length>40||!doc.pages.every(page=>Array.isArray(page.elements)&&Number(page.width)>0&&Number(page.height)>0)){throw new Error('invalid project');}const allowedTypes=['text','rect','ellipse','line','triangle','image'];const allowedFonts=['Arial, Helvetica, sans-serif','Georgia, serif',"'Courier New', monospace",'Verdana, sans-serif',"'Trebuchet MS', sans-serif"];const safeColor=value=>/^#[0-9a-f]{6}$/i.test(String(value||''))?String(value):'#20231d';const safePage=(page,index)=>({id:uid(),name:String(page.name||`Page ${index+1}`).slice(0,80),width:clamp(Math.round(Number(page.width)||1080),200,5000),height:clamp(Math.round(Number(page.height)||1350),200,5000),bg:safeColor(page.bg||'#ffffff'),elements:page.elements.slice(0,500).filter(obj=>obj&&allowedTypes.includes(obj.type)).map(obj=>({id:uid(),type:obj.type,name:String(obj.name||obj.type).slice(0,100),x:clamp(Number(obj.x)||0,-10000,10000),y:clamp(Number(obj.y)||0,-10000,10000),w:clamp(Number(obj.w)||100,10,5000),h:clamp(Number(obj.h)||80,10,5000),rotation:clamp(Number(obj.rotation)||0,-360,360),opacity:clamp(Number(obj.opacity??1),0,1),visible:obj.visible!==false,locked:obj.locked===true,fill:safeColor(obj.fill||'#20231d'),stroke:obj.stroke?safeColor(obj.stroke):'',strokeWidth:clamp(Number(obj.strokeWidth)||2,1,40),radius:clamp(Number(obj.radius)||0,0,1000),text:String(obj.text||'').slice(0,10000),fontSize:clamp(Number(obj.fontSize)||32,6,300),fontFamily:allowedFonts.includes(obj.fontFamily)?obj.fontFamily:allowedFonts[0],fontWeight:clamp(Number(obj.fontWeight)||500,100,900),align:['left','center','right'].includes(obj.align)?obj.align:'left',lineHeight:clamp(Number(obj.lineHeight)||1.15,.8,2),letterSpacing:clamp(Number(obj.letterSpacing)||0,-5,20),src:obj.type==='image'&&typeof obj.src==='string'&&/^data:image\/(png|jpeg|webp|gif);base64,/i.test(obj.src)&&obj.src.length<8*1024*1024?obj.src:''}))});activeDoc={id:uid(),name:String(doc.name||'Imported design').slice(0,100),createdAt:Date.now(),updatedAt:Date.now(),pages:doc.pages.map(safePage)};activePageId=activeDoc.pages[0].id;selectedId=null;undoStack=[];redoStack=[];enterEditor();showToast('Project imported');}catch(error){showToast('That file is not a valid Mosaic project JSON');}};reader.readAsText(file);
+  }
+  function showExportModal() {
+    const backdrop=document.createElement('div');backdrop.className='modal-backdrop';backdrop.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="Export design"><div class="modal-header"><strong>Export your design</strong><button class="btn icon small" data-close-modal aria-label="Close">×</button></div><div class="modal-body"><p style="margin:0 0 16px;color:#757b6d;font-size:12px;line-height:1.5">Export the current page as an image, save an editable project file, or print every page into one PDF.</p><div class="action-stack"><button class="btn" data-export="png">▧ Download PNG · 2× resolution</button><button class="btn" data-export="svg">◇ Download SVG · current page</button><button class="btn" data-export="pdf">▤ Print all pages / Save as PDF</button><button class="btn" data-export="json">⇩ Export editable project JSON</button></div><div class="asset-note">PDF uses your browser's print dialog. Project JSON includes object positions and uploaded image data so the design can be reopened in Mosaic.</div></div></div>`;
+    document.body.appendChild(backdrop);const close=()=>backdrop.remove();backdrop.addEventListener('click',event=>{if(event.target===backdrop||event.target.closest('[data-close-modal]'))close();});$$('[data-export]',backdrop).forEach(btn=>btn.addEventListener('click',()=>{const action=btn.dataset.export;close();if(action==='png')exportPNG();if(action==='svg')exportSVG();if(action==='pdf')exportPDF();if(action==='json')exportJSON();}));
+  }
+  function openProject(id) {
+    const doc=readProjects().find(item=>item.id===id);if(!doc)return;activeDoc=deepClone(doc);activePageId=activeDoc.pages[0]?.id;selectedId=null;undoStack=[];redoStack=[];enterEditor();
+  }
+  function createBlank() { newDocument(); }
+
+  // Advanced AI + collaboration. Local editing remains fully functional when services are not configured.
+  const AI_PLAN_LIMIT = 20;
+  const COLLAB_SESSION_KEY = 'mosaic-collab-session-v1';
+  const COLLAB_CLIENT_KEY = 'mosaic-collab-client-v1';
+  let pendingAIPlan = null;
+  let collab = { roomId:null, accessToken:null, inviteUrl:null, clientId:null, client:null, channel:null, applyingRemote:false, presence:[], saveTimer:null, lastRemoteAt:0, baseDocument:null };
+  const safeJson = value => { try { return JSON.parse(value); } catch { return null; } };
+  const aiConfigStatus = () => location.protocol === 'file:' ? 'Open this app through your hosted site or local web server to use the AI endpoint.' : 'AI keys stay on the server; this browser sends design context and your instruction only.';
+  function currentDesignSummary() {
+    if (!activeDoc) return null;
+    return {
+      id: String(activeDoc.id || '').slice(0,100), name: String(activeDoc.name || 'Untitled design').slice(0,100),
+      pages: (activeDoc.pages || []).slice(0,40).map(page => ({
+        id:String(page.id || '').slice(0,100), name:String(page.name || 'Page').slice(0,80),
+        width:clamp(Number(page.width)||1080,200,5000), height:clamp(Number(page.height)||1350,200,5000),
+        bg:/^#[0-9a-f]{6}$/i.test(page.bg||'')?page.bg:'#ffffff',
+        elements:(page.elements||[]).slice(0,300).map(obj => ({id:String(obj.id||'').slice(0,100),type:obj.type,name:String(obj.name||obj.type||'Layer').slice(0,100),text:obj.type==='text'?String(obj.text||'').slice(0,700):undefined,x:Number(obj.x)||0,y:Number(obj.y)||0,w:Number(obj.w)||1,h:Number(obj.h)||1,fill:/^#[0-9a-f]{6}$/i.test(obj.fill||'')?obj.fill:undefined,fontSize:obj.type==='text'?Number(obj.fontSize)||32:undefined,visible:obj.visible!==false}))
+      }))
+    };
+  }
+  function modalBase(label, title, bodyHtml) {
+    const backdrop=document.createElement('div'); backdrop.className='modal-backdrop';
+    backdrop.innerHTML=`<div class="modal modal-wide" role="dialog" aria-modal="true" aria-label="${esc(label)}"><div class="modal-header"><div><div class="mosaic-feature-kicker">${esc(label)}</div><strong>${esc(title)}</strong></div><button class="btn icon small" data-close-feature aria-label="Close">×</button></div><div class="modal-body">${bodyHtml}</div></div>`;
+    document.body.appendChild(backdrop);
+    const close=()=>{backdrop.remove();};
+    backdrop.addEventListener('click',event=>{if(event.target===backdrop||event.target.closest('[data-close-feature]'))close();});
+    return {backdrop,close};
+  }
+  function describeAIAction(op) {
+    const names={add_text:'Add text',add_shape:'Add shape',update_element:'Update an element',delete_element:'Delete an element',set_background:'Change page background'};
+    const target=op.name||op.elementId||op.shape||'';
+    const changes=op.fields ? Object.keys(op.fields).join(', ') : (op.text||op.color||'');
+    return {title:names[op.type]||'Design change',detail:[target,changes].filter(Boolean).join(' · ').slice(0,240)};
+  }
+  function openAIDesign() {
+    if(!activeDoc){showToast('Open or create a design before using AI');return;}
+    const ui=modalBase('AI DESIGN ASSISTANT','Describe the change',`<p class="feature-note">Ask for focused edits to the current canvas. Mosaic will show a proposed plan first; nothing changes until you approve it.</p><label class="mosaic-field-label" for="aiInstruction">What should change?</label><textarea id="aiInstruction" class="form-control textarea mosaic-textarea" maxlength="3000" placeholder="Example: Make the headline more impactful, add a small supporting line, and use a restrained olive accent."></textarea><div class="mosaic-feature-status" id="aiStatus">${esc(aiConfigStatus())}</div><div class="mosaic-plan" id="aiPlan" hidden></div><div class="mosaic-inline-actions"><button class="btn lime" id="aiGenerateBtn">✦ Generate plan</button><button class="btn" id="aiApplyBtn" disabled>Apply approved changes</button><button class="btn" id="aiCancelBtn">Cancel</button></div>`);
+    const $m=(sel)=>$(sel,ui.backdrop); let busy=false;
+    const setStatus=(text)=>{$m('#aiStatus').textContent=text;};
+    $m('#aiCancelBtn').addEventListener('click',ui.close);
+    $m('#aiGenerateBtn').addEventListener('click',async()=>{
+      const instruction=$m('#aiInstruction').value.trim();
+      if(!instruction){setStatus('Enter a design instruction first.');return;}
+      if(busy)return; busy=true; $m('#aiGenerateBtn').disabled=true; $m('#aiApplyBtn').disabled=true; pendingAIPlan=null;
+      setStatus('Building a plan from your current design…'); $m('#aiPlan').hidden=true;
+      try {
+        const response=await fetch('/api/ai/design',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({instruction,document:currentDesignSummary(),activePageId,selectedElement:(()=>{const o=getSelected();return o?{id:o.id,type:o.type,name:o.name,text:o.type==='text'?o.text:undefined,fill:o.fill,x:o.x,y:o.y,w:o.w,h:o.h,fontSize:o.fontSize}:null;})()})});
+        const payload=await response.json().catch(()=>({}));
+        if(!response.ok) throw new Error(payload.error||`AI request failed (${response.status})`);
+        const plan=payload.plan;
+        if(!plan||!Array.isArray(plan.operations)||!plan.operations.length||plan.operations.length>AI_PLAN_LIMIT)throw new Error('The AI response did not contain a valid edit plan. Please try a more specific instruction.');
+        if(plan.pageId&&plan.pageId!==activePageId)throw new Error('The active page changed while AI was working. Generate the plan again.');
+        pendingAIPlan=plan;
+        $m('#aiPlan').innerHTML=`<div class="mosaic-feature-status"><strong>${esc(plan.summary||'Proposed design edits')}</strong><br>Review each action before applying.</div>${plan.operations.map((op,index)=>{const d=describeAIAction(op);return `<div class="mosaic-plan-item"><span class="mosaic-plan-number">${index+1}</span><div><strong>${esc(d.title)}</strong><small>${esc(d.detail||op.type)}</small></div></div>`;}).join('')}`;
+        $m('#aiPlan').hidden=false; $m('#aiApplyBtn').disabled=false; setStatus('Plan ready. Your canvas has not been changed.');
+      } catch(error) { setStatus(error.message||'AI service unavailable. Check server configuration.'); }
+      finally {busy=false;$m('#aiGenerateBtn').disabled=false;}
+    });
+    $m('#aiApplyBtn').addEventListener('click',()=>{
+      if(!pendingAIPlan||!activeDoc)return;
+      try {
+        applyAIPlan(pendingAIPlan); ui.close(); showToast('AI design changes applied');
+      } catch(error) { setStatus(error.message||'Could not apply the plan.'); }
+    });
+  }
+  function applyAIPlan(plan) {
+    if(!activeDoc||!currentPage()) throw new Error('Open a design first.');
+    if(!Array.isArray(plan.operations)||!plan.operations.length||plan.operations.length>AI_PLAN_LIMIT) throw new Error('Invalid AI plan.');
+    const page=currentPage();
+    const color=value=>/^#[0-9a-f]{6}$/i.test(String(value||''))?String(value):null;
+    const validFields=['name','text','x','y','w','h','fill','fontSize','fontWeight','align','radius','opacity','rotation','lineHeight','letterSpacing'];
+    const staged=[];
+    for(const op of plan.operations){
+      if(!op||typeof op.type!=='string') throw new Error('An AI action is missing its type.');
+      if(op.type==='set_background'){const fill=color(op.color);if(!fill)throw new Error('AI proposed an invalid background color.');staged.push({type:op.type,color:fill});continue;}
+      if(op.type==='add_text'){
+        const text=String(op.text||'').slice(0,5000);if(!text.trim())throw new Error('AI proposed an empty text element.');
+        staged.push({type:op.type,name:String(op.name||'AI text').slice(0,100),text,x:clamp(Number(op.x)||page.width*.1,0,page.width),y:clamp(Number(op.y)||page.height*.1,0,page.height),w:clamp(Number(op.w)||page.width*.8,30,page.width),h:clamp(Number(op.h)||Math.max(80,Number(op.fontSize||32)*3),30,page.height),fontSize:clamp(Number(op.fontSize)||32,6,300),fontWeight:clamp(Number(op.fontWeight)||700,100,900),fill:color(op.fill)||'#20231d',align:['left','center','right'].includes(op.align)?op.align:'left'});continue;
+      }
+      if(op.type==='add_shape'){
+        const shape=['rect','ellipse','triangle','line'].includes(op.shape)?op.shape:'rect';
+        staged.push({type:op.type,shape,name:String(op.name||'AI shape').slice(0,100),x:clamp(Number(op.x)||page.width*.35,0,page.width),y:clamp(Number(op.y)||page.height*.35,0,page.height),w:clamp(Number(op.w)||page.width*.25,10,page.width),h:clamp(Number(op.h)||page.height*.2,1,page.height),fill:color(op.fill)||'#d7f36b',radius:clamp(Number(op.radius)||0,0,1000)});continue;
+      }
+      if(op.type==='update_element'){
+        const obj=page.elements.find(item=>item.id===op.elementId);if(!obj)throw new Error('An element in the AI plan no longer exists. Generate the plan again.');
+        const fields={};for(const [key,value] of Object.entries(op.fields||{})){if(!validFields.includes(key))continue;if(key==='fill'){const c=color(value);if(c)fields.fill=c;}else if(key==='align'){if(['left','center','right'].includes(value))fields.align=value;}else if(['name','text'].includes(key)){fields[key]=String(value).slice(0,key==='text'?5000:100);}else if(Number.isFinite(Number(value))){const ranges={x:[-page.width*2,page.width*2],y:[-page.height*2,page.height*2],w:[10,page.width*2],h:[1,page.height*2],fontSize:[6,300],fontWeight:[100,900],radius:[0,1000],opacity:[0,1],rotation:[-360,360],lineHeight:[.8,2],letterSpacing:[-5,20]};const r=ranges[key]||[-10000,10000];fields[key]=clamp(Number(value),r[0],r[1]);}}
+        if(!Object.keys(fields).length)throw new Error('The AI proposed an empty element update.');staged.push({type:op.type,elementId:obj.id,fields});continue;
+      }
+      if(op.type==='delete_element'){if(!page.elements.some(item=>item.id===op.elementId))throw new Error('An element in the AI plan no longer exists. Generate the plan again.');staged.push({type:op.type,elementId:op.elementId});continue;}
+      throw new Error(`Unsupported AI action: ${op.type}`);
+    }
+    pushHistory();
+    for(const op of staged){
+      if(op.type==='set_background'){page.bg=op.color;continue;}
+      if(op.type==='add_text'){const obj=t(op.name,op.text,op.x,op.y,op.w,op.h,op.fontSize,op.fill,op.fontWeight,{align:op.align});page.elements.push(obj);selectedId=obj.id;continue;}
+      if(op.type==='add_shape'){const obj=op.shape==='rect'?r(op.name,op.x,op.y,op.w,op.h,op.fill,{radius:op.radius}):op.shape==='ellipse'?e(op.name,op.x,op.y,op.w,op.h,op.fill):op.shape==='triangle'?{id:uid(),type:'triangle',name:op.name,x:op.x,y:op.y,w:op.w,h:op.h,fill:op.fill,opacity:1,rotation:0,visible:true,locked:false}:line(op.name,op.x,op.y,op.w,op.h,op.fill,{strokeWidth:4});page.elements.push(obj);selectedId=obj.id;continue;}
+      if(op.type==='update_element'){const obj=page.elements.find(item=>item.id===op.elementId);Object.assign(obj,op.fields);selectedId=obj.id;continue;}
+      if(op.type==='delete_element'){page.elements=page.elements.filter(item=>item.id!==op.elementId);if(selectedId===op.elementId)selectedId=null;}
+    }
+    renderEditor();scheduleSave();
+  }
+  function parseInvite(value) {
+    let roomId='',accessToken='';
+    try {const url=new URL(value,location.href);roomId=url.searchParams.get('room')||'';accessToken=(url.hash.match(/(?:^#|&)key=([^&]+)/)||[])[1]||'';accessToken=decodeURIComponent(accessToken);}
+    catch{}
+    if(!roomId){const parts=String(value||'').trim().split(/[\s,]+/);if(parts.length>=2){roomId=parts[0];accessToken=parts[1];}}
+    return {roomId:roomId.slice(0,100),accessToken:accessToken.slice(0,200)};
+  }
+  function collabStored() { return safeJson(sessionStorage.getItem(COLLAB_SESSION_KEY)||'null'); }
+  function persistCollabSession() { if(collab.roomId&&collab.accessToken)sessionStorage.setItem(COLLAB_SESSION_KEY,JSON.stringify({roomId:collab.roomId,accessToken:collab.accessToken,inviteUrl:collab.inviteUrl})); }
+  async function getSupabaseClient() {
+    if(collab.client)return collab.client;
+    const configResponse=await fetch('/api/collaboration/config');
+    const config=await configResponse.json().catch(()=>({}));
+    if(!configResponse.ok||!config.supabaseUrl||!config.publishableKey)throw new Error(config.error||'Collaboration is not configured. Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY on the server.');
+    if(!window.supabase?.createClient){
+      await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.js';script.onload=resolve;script.onerror=()=>reject(new Error('Could not load the Supabase Realtime client. Check the network or CDN access.'));document.head.appendChild(script);});
+    }
+    if(!window.supabase?.createClient)throw new Error('Supabase client unavailable.');
+    collab.client=window.supabase.createClient(config.supabaseUrl,config.publishableKey,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+    return collab.client;
+  }
+  async function collabRequest(body) {
+    const response=await fetch('/api/collaboration/rooms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const payload=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(payload.error||`Collaboration request failed (${response.status})`);
+    return payload;
+  }
+  function sameJSON(a,b) { return JSON.stringify(a)===JSON.stringify(b); }
+  // Three-way merge is performed by page and element id. Edits to different fields/elements survive
+  // concurrent updates; a same-field conflict uses the newer transport timestamp.
+  function mergeCollaborativeDocument(base,local,remote,localStamp=0,remoteStamp=0) {
+    const preferRemote=remoteStamp>=localStamp;
+    const clone=value=>value===undefined?undefined:deepClone(value);
+    function mergeValue(b,l,r) {
+      if(sameJSON(l,b))return clone(r);
+      if(sameJSON(r,b)||sameJSON(l,r))return clone(l);
+      if(b!==undefined&&l===undefined&&r!==undefined)return sameJSON(r,b)?undefined:clone(r);
+      if(b!==undefined&&r===undefined&&l!==undefined)return sameJSON(l,b)?undefined:clone(l);
+      if(l===undefined)return clone(r);
+      if(r===undefined)return clone(l);
+      if(Array.isArray(l)&&Array.isArray(r)){
+        const keyed=[...l,...r,...(Array.isArray(b)?b:[])].every(item=>item&&typeof item==='object'&&typeof item.id==='string');
+        if(!keyed)return clone(preferRemote?r:l);
+        const bm=new Map((Array.isArray(b)?b:[]).map(item=>[item.id,item]));
+        const lm=new Map(l.map(item=>[item.id,item]));const rm=new Map(r.map(item=>[item.id,item]));
+        const order=[...r.map(item=>item.id),...l.map(item=>item.id),...(Array.isArray(b)?b.map(item=>item.id):[])];
+        const seen=new Set();const out=[];
+        for(const id of order){if(seen.has(id))continue;seen.add(id);const value=mergeValue(bm.get(id),lm.get(id),rm.get(id));if(value!==undefined)out.push(value);}
+        return out;
+      }
+      if(l&&r&&b&&typeof l==='object'&&typeof r==='object'&&typeof b==='object'&&!Array.isArray(l)&&!Array.isArray(r)&&!Array.isArray(b)){
+        const out={};const keys=new Set([...Object.keys(b),...Object.keys(l),...Object.keys(r)]);
+        for(const key of keys){const value=mergeValue(b[key],l[key],r[key]);if(value!==undefined)out[key]=value;}
+        return out;
+      }
+      return clone(preferRemote?r:l);
+    }
+    return mergeValue(base,local,remote)||clone(remote)||clone(local);
+  }
+  async function createCollabRoom() {
+    if(!activeDoc){showToast('Open or create a design before sharing');return;}
+    const payload=await collabRequest({action:'create',document:deepClone(activeDoc)});
+    const inviteUrl=`${location.origin}${location.pathname}?room=${encodeURIComponent(payload.roomId)}#key=${encodeURIComponent(payload.accessToken)}`;
+    await connectCollabRoom(payload.roomId,payload.accessToken,inviteUrl,payload.document||currentDesignSummary());
+    return inviteUrl;
+  }
+  async function joinCollabRoom(roomId,accessToken,inviteUrl) {
+    if(!roomId||!accessToken)throw new Error('Paste a full collaboration invite link, including the key after #key=.');
+    const payload=await collabRequest({action:'load',roomId,accessToken});
+    if(payload.document){activeDoc=payload.document;activePageId=activeDoc.pages?.[0]?.id||null;selectedId=null;undoStack=[];redoStack=[];enterEditor();}
+    await connectCollabRoom(roomId,accessToken,inviteUrl,payload.document||currentDesignSummary());
+  }
+  async function connectCollabRoom(roomId,accessToken,inviteUrl,initialDocument) {
+    await disconnectCollab(false);
+    const client=await getSupabaseClient();
+    collab.roomId=roomId;collab.accessToken=accessToken;collab.inviteUrl=inviteUrl;collab.clientId=sessionStorage.getItem(COLLAB_CLIENT_KEY)||uid();sessionStorage.setItem(COLLAB_CLIENT_KEY,collab.clientId);persistCollabSession();
+    const topicDigest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(`${roomId}:${accessToken}`));
+    const topicSecret=Array.from(new Uint8Array(topicDigest)).map(byte=>byte.toString(16).padStart(2,'0')).join('');
+    const channel=client.channel(`mosaic-room-${topicSecret}`,{config:{broadcast:{ack:true,self:false},presence:{key:collab.clientId}}});
+    collab.baseDocument=deepClone(initialDocument||activeDoc);
+    channel.on('broadcast',{event:'document'},async({payload})=>{
+      if(!payload||payload.clientId===collab.clientId||Number(payload.updatedAt)<=collab.lastRemoteAt)return;
+      let remoteDocument=payload.document;
+      // Large snapshots are saved through the API first; Broadcast sends a small invalidation hint instead.
+      if(payload.snapshotRequired){
+        try{const latest=await collabRequest({action:'load',roomId:collab.roomId,accessToken:collab.accessToken});remoteDocument=latest.document;}
+        catch(error){console.warn('Could not retrieve the latest shared snapshot',error);return;}
+      }
+      if(!remoteDocument?.pages?.length)return;
+      collab.applyingRemote=true;let shouldPropagate=false;
+      try{
+        const local=deepClone(activeDoc||remoteDocument);const base=collab.baseDocument||deepClone(remoteDocument);
+        const merged=mergeCollaborativeDocument(base,local,remoteDocument,Number(local.updatedAt)||0,Number(payload.updatedAt)||0);
+        shouldPropagate=!sameJSON(merged,remoteDocument);collab.lastRemoteAt=Number(payload.updatedAt)||Date.now();collab.baseDocument=deepClone(merged);activeDoc=merged;
+        activePageId=activeDoc.pages.some(p=>p.id===activePageId)?activePageId:activeDoc.pages[0].id;selectedId=null;
+        writeProjects([activeDoc,...readProjects().filter(doc=>doc.id!==activeDoc.id)].slice(0,30));renderEditor();$('#saveState').textContent='Synced with collaborators';
+      } finally {collab.applyingRemote=false;}
+      if(shouldPropagate)scheduleSave();
+    }).on('presence',{event:'sync'},()=>{collab.presence=Object.values(channel.presenceState()).flat();updateCollabPresence();});
+    const status=await new Promise((resolve,reject)=>{channel.subscribe(async state=>{if(state==='SUBSCRIBED'){try{await channel.track({clientId:collab.clientId,name:'Mosaic collaborator',joinedAt:Date.now()});resolve(state);}catch(e){reject(e);}}else if(state==='CHANNEL_ERROR'||state==='TIMED_OUT'||state==='CLOSED'){reject(new Error(`Realtime channel status: ${state}`));}});setTimeout(()=>reject(new Error('Timed out while connecting to the shared room.')),12000);});
+    collab.channel=channel;collab.roomId=roomId;collab.accessToken=accessToken;collab.inviteUrl=inviteUrl;collab.baseDocument=deepClone(activeDoc||initialDocument);persistCollabSession();
+    $('#collabPresence').hidden=false;updateCollabPresence();
+    // Signal the current saved document to peers without replacing a newer peer version.
+    if(initialDocument)await channel.send({type:'broadcast',event:'document',payload:{clientId:collab.clientId,updatedAt:Number(initialDocument.updatedAt)||Date.now(),document:initialDocument}});
+    const modal=document.querySelector('.modal-backdrop');if(modal?.querySelector('#collabStatus'))modal.querySelector('#collabStatus').textContent='Connected. Changes are shared with people using this invite link.';
+  }
+  function updateCollabPresence() {
+    const count=Math.max(1,collab.presence.length);
+    $('#collabPresenceText').textContent=`${count} here`;
+    if(collab.channel)$('#collabPresence').hidden=false;
+  }
+  async function persistSharedDocument(checkpoint=false) {
+    if(!collab.roomId||!collab.accessToken||collab.applyingRemote||!activeDoc)return;
+    try {
+      const snapshot=deepClone(activeDoc);const sentAt=Date.now();const serialized=JSON.stringify(snapshot);const snapshotBytes=new Blob([serialized]).size;
+      const payload={action:checkpoint?'checkpoint':'save',roomId:collab.roomId,accessToken:collab.accessToken,document:snapshot};
+      const response=await fetch('/api/collaboration/rooms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});      if(!response.ok){const error=await response.json().catch(()=>({}));throw new Error(error.error||`Cloud save failed (${response.status})`);}
+      collab.baseDocument=deepClone(snapshot);
+      let liveSyncFailed=false;
+      if(collab.channel){
+        const message={clientId:collab.clientId,updatedAt:sentAt};
+        if(snapshotBytes<=120_000)message.document=snapshot;else message.snapshotRequired=true;
+        try{const delivery=await collab.channel.send({type:'broadcast',event:'document',payload:message});if(delivery==='error')liveSyncFailed=true;}
+        catch(error){liveSyncFailed=true;console.warn('Mosaic live broadcast failed after cloud save',error);}
+      }
+      $('#saveState').textContent=checkpoint?'Shared checkpoint saved ✓':liveSyncFailed?'Shared save ✓ · live sync unavailable':'Shared · saved ✓';
+    } catch(error) { $('#saveState').textContent='Local save ✓ · shared save failed'; console.warn('Mosaic collaboration save failed',error); }
+  }
+  async function disconnectCollab(clearSession=true) {
+    if(collab.saveTimer){clearTimeout(collab.saveTimer);collab.saveTimer=null;}
+    if(collab.channel&&collab.client){try{await collab.client.removeChannel(collab.channel);}catch{}}
+    collab.channel=null;collab.roomId=null;collab.accessToken=null;collab.inviteUrl=null;collab.presence=[];collab.lastRemoteAt=0;collab.baseDocument=null;
+    $('#collabPresence').hidden=true;
+    if(clearSession)sessionStorage.removeItem(COLLAB_SESSION_KEY);
+  }
+  function openCollaboration() {
+    const current=collabStored();
+    const params=new URLSearchParams(location.search);
+    const roomId=params.get('room')||current?.roomId||'';
+    const tokenFromUrl=(location.hash.match(/(?:^#|&)key=([^&]+)/)||[])[1]||'';
+    const accessToken=decodeURIComponent(tokenFromUrl)||current?.accessToken||'';
+    const ui=modalBase('COLLABORATION','Work on one design, together',`<p class="feature-note">Create a shared room or paste an invite link. Everyone with the invite can edit this design. Shared rooms require the server API and Supabase settings; local editing continues to work without them.</p><div class="mosaic-feature-status" id="collabStatus">${collab.roomId?'Connected to a shared room.':'Not connected to a shared room.'}</div><label class="mosaic-field-label" for="collabInviteInput">Invite link or room id + key</label><input class="form-control" id="collabInviteInput" placeholder="Paste the full shared invite link" value="${esc(roomId&&accessToken?`${location.origin}${location.pathname}?room=${roomId}#key=${accessToken}`:'')}"><div class="mosaic-inline-actions"><button class="btn lime" id="collabCreateBtn">＋ Create shared room</button><button class="btn" id="collabJoinBtn">Join room</button><button class="btn" id="collabCopyBtn" ${collab.inviteUrl?'':'disabled'}>Copy invite</button></div><div class="mosaic-inline-actions"><button class="btn" id="collabCheckpointBtn" ${collab.roomId?'':'disabled'}>Save version checkpoint</button><button class="btn" id="collabHistoryBtn" ${collab.roomId?'':'disabled'}>Version history</button><button class="btn" id="collabLeaveBtn" ${collab.roomId?'':'disabled'}>Leave shared room</button></div><div id="collabVersions" class="mosaic-plan" hidden></div><p class="feature-note">Room access keys are placed after <code>#key=</code> so browsers do not send them with normal page requests. Treat invite links like edit permissions. Cloud rooms persist the latest canvas and periodic checkpoints.</p>`);
+    const $m=(sel)=>$(sel,ui.backdrop); const status=text=>{$m('#collabStatus').textContent=text;};
+    $m('#collabCreateBtn').addEventListener('click',async()=>{const btn=$m('#collabCreateBtn');btn.disabled=true;status('Creating a room and opening a real-time channel…');try{const url=await createCollabRoom();$m('#collabInviteInput').value=url;$m('#collabCopyBtn').disabled=false;$m('#collabCheckpointBtn').disabled=false;$m('#collabHistoryBtn').disabled=false;$m('#collabLeaveBtn').disabled=false;status('Room created and connected. Copy the invite link to share edit access.');}catch(error){status(error.message||'Could not create the shared room.');}finally{btn.disabled=false;}});
+    $m('#collabJoinBtn').addEventListener('click',async()=>{const btn=$m('#collabJoinBtn');btn.disabled=true;status('Checking invite and connecting…');try{const parsed=parseInvite($m('#collabInviteInput').value);await joinCollabRoom(parsed.roomId,parsed.accessToken,$m('#collabInviteInput').value.trim());$m('#collabCheckpointBtn').disabled=false;$m('#collabHistoryBtn').disabled=false;$m('#collabLeaveBtn').disabled=false;$m('#collabCopyBtn').disabled=!collab.inviteUrl;status('Connected. Changes will sync to collaborators in this room.');}catch(error){status(error.message||'Could not join this room.');}finally{btn.disabled=false;}});
+    $m('#collabCopyBtn').addEventListener('click',async()=>{if(!collab.inviteUrl)return;try{await navigator.clipboard.writeText(collab.inviteUrl);status('Invite link copied. Anyone with it can edit this room.');}catch{ $m('#collabInviteInput').value=collab.inviteUrl;$m('#collabInviteInput').select();status('Copy the selected invite link manually.'); }});
+    $m('#collabCheckpointBtn').addEventListener('click',async()=>{status('Saving a shared version checkpoint…');await persistSharedDocument(true);status($('#saveState').textContent);});
+    $m('#collabHistoryBtn').addEventListener('click',async()=>{const area=$m('#collabVersions');area.hidden=false;area.innerHTML='<div class="mosaic-feature-status">Loading versions…</div>';try{const payload=await collabRequest({action:'versions',roomId:collab.roomId,accessToken:collab.accessToken});area.innerHTML=payload.versions?.length?payload.versions.map(version=>`<div class="mosaic-plan-item"><span class="mosaic-plan-number">↶</span><div><strong>${esc(version.label||'Version')}</strong><small>${esc(new Date(version.created_at).toLocaleString())}</small><button class="btn small" style="margin-top:7px" data-restore-version="${Number(version.id)}">Restore this version</button></div></div>`).join(''):'<div class="mosaic-feature-status">No checkpoints yet.</div>';$$('[data-restore-version]',area).forEach(button=>button.addEventListener('click',async()=>{if(!confirm('Restore this shared version? The current design will first be saved as a checkpoint.'))return;button.disabled=true;try{await persistSharedDocument(true);const restored=await collabRequest({action:'restore',roomId:collab.roomId,accessToken:collab.accessToken,versionId:Number(button.dataset.restoreVersion)});if(restored.document){activeDoc=restored.document;activePageId=activeDoc.pages[0]?.id||null;selectedId=null;renderEditor();scheduleSave();}status('Version restored and shared.');area.hidden=true;}catch(error){status(error.message||'Could not restore that version.');}finally{button.disabled=false;}}));}catch(error){area.innerHTML=`<div class="mosaic-feature-status">${esc(error.message||'Could not load history.')}</div>`;}});
+    $m('#collabLeaveBtn').addEventListener('click',async()=>{await disconnectCollab(true);$m('#collabCopyBtn').disabled=true;$m('#collabCheckpointBtn').disabled=true;$m('#collabHistoryBtn').disabled=true;$m('#collabLeaveBtn').disabled=true;status('Left shared room. Your local design remains saved in this browser.');showToast('Left shared room');});
+    if(location.protocol==='file:')status('Open through your hosted site or local web server; API routes do not run from file://.');
+  }
+  // Avoid leaking a previous invite in copied page URLs after the current tab has accepted it.
+  window.addEventListener('load',()=>{
+    const saved=collabStored();const invite=parseInvite(location.href);
+    if(invite.roomId&&invite.accessToken){setTimeout(()=>joinCollabRoom(invite.roomId,invite.accessToken,location.href).then(()=>{history.replaceState(null,'',location.pathname);}).catch(error=>showToast(error.message||'Could not open collaboration invite.')),250);}
+    else if(saved?.roomId&&saved?.accessToken){setTimeout(()=>joinCollabRoom(saved.roomId,saved.accessToken,saved.inviteUrl||'').catch(error=>{console.warn('Could not reconnect to saved Mosaic room',error);showToast('Could not reconnect to the shared room. Open Collaborate to retry.');}),250);}
+  });
+
+  $('#brandHome').addEventListener('click',goDashboard);
+  $('#dashboardBlank').addEventListener('click',createBlank);$('#dashboardBlank2').addEventListener('click',createBlank);
+  $('#backToProjects').addEventListener('click',goDashboard);$('#saveProjectBtn').addEventListener('click',()=>saveCurrent());$('#saveProjectBtn').addEventListener('dblclick',exportJSON);
+  $('#saveProjectBtn').title='Save locally (double-click to export project JSON)';
+  $('#exportMenuBtn').addEventListener('click',showExportModal);
+  $('#aiDesignBtn').addEventListener('click',openAIDesign);
+  $('#collaborateBtn').addEventListener('click',openCollaboration);
+  $('#dashboardCollaborateBtn').addEventListener('click',openCollaboration);
+  $('#undoBtn').addEventListener('click',()=>restoreSnapshot(undoStack,redoStack));$('#redoBtn').addEventListener('click',()=>restoreSnapshot(redoStack,undoStack));
+  $('#projectTitle').addEventListener('change',event=>{if(!activeDoc)return;pushHistory();activeDoc.name=event.target.value.trim()||'Untitled design';renderCanvas();renderPages();scheduleSave();});
+  $('#zoomIn').addEventListener('click',()=>{zoom=clamp(zoom+10,30,180);renderCanvas();});$('#zoomOut').addEventListener('click',()=>{zoom=clamp(zoom-10,30,180);renderCanvas();});$('#fitCanvas').addEventListener('click',()=>{zoom=100;renderCanvas();});
+  $('#duplicatePageBtn').addEventListener('click',duplicatePage);$('#deletePageBtn').addEventListener('click',deletePage);
+  $('#newCustomSize').addEventListener('click',()=>{const backdrop=document.createElement('div');backdrop.className='modal-backdrop';backdrop.innerHTML=`<div class="modal" role="dialog" aria-modal="true"><div class="modal-header"><strong>Custom page size</strong><button class="btn icon small" data-close>×</button></div><div class="modal-body"><p style="font-size:12px;color:#757b6d;margin:0 0 16px">Set the canvas size in pixels. Existing elements keep their current coordinates.</p><div class="form-two"><div class="form-row"><label for="customW">Width (200–5000)</label><input class="form-control" id="customW" type="number" min="200" max="5000" value="${currentPage().width}"></div><div class="form-row"><label for="customH">Height (200–5000)</label><input class="form-control" id="customH" type="number" min="200" max="5000" value="${currentPage().height}"></div></div><div class="modal-actions"><button class="btn" data-close>Cancel</button><button class="btn lime" id="applyCustomSize">Apply size</button></div></div></div>`;document.body.appendChild(backdrop);backdrop.addEventListener('click',event=>{if(event.target===backdrop||event.target.closest('[data-close]'))backdrop.remove();});$('#applyCustomSize',backdrop).addEventListener('click',()=>{const w=clamp(Number($('#customW',backdrop).value)||1080,200,5000),h=clamp(Number($('#customH',backdrop).value)||1350,200,5000);pushHistory();currentPage().width=w;currentPage().height=h;backdrop.remove();renderEditor();scheduleSave();showToast('Canvas size updated');});});
+  $$('.rail-btn[data-tab]').forEach(btn=>btn.addEventListener('click',()=>setTab(btn.dataset.tab)));
+  $('#propertiesTab').addEventListener('click',()=>{inspectorMode='properties';renderInspector();});$('#layersTab').addEventListener('click',()=>{inspectorMode='layers';renderInspector();});
+  $('#imageInput').addEventListener('change',async event=>{const files=Array.from(event.target.files||[]);event.target.value='';for(const file of files){if(!file.type.startsWith('image/')){showToast('Choose a supported image file');continue;}if(file.size>5*1024*1024){showToast(`${file.name} exceeds 5 MB`);continue;}const reader=new FileReader();reader.onload=()=>addImageData(reader.result,file.name.replace(/\.[^.]+$/,'')||'Uploaded image');reader.onerror=()=>showToast(`Could not read ${file.name}`);reader.readAsDataURL(file);}});
+  $('#projectInput').addEventListener('change',event=>{const file=event.target.files?.[0];event.target.value='';importJSON(file);});$('#importProjectBtn').addEventListener('click',()=>$('#projectInput').click());
+  $('#dashboardTemplates').addEventListener('click',event=>{const card=event.target.closest('[data-template]');if(card)newDocument(templates.find(temp=>temp.id===card.dataset.template));});
+  $('#recentGrid').addEventListener('click',event=>{const card=event.target.closest('[data-open-project]');if(card)openProject(card.dataset.openProject);});
+  window.addEventListener('keydown',event=>{
+    if(document.body.classList.contains('screen-dashboard'))return;
+    const target=event.target;const typing=target.matches('input,textarea,select,[contenteditable="true"]');const mod=event.ctrlKey||event.metaKey;
+    if(mod&&event.key.toLowerCase()==='s'){event.preventDefault();saveCurrent();return;}
+    if(mod&&event.key.toLowerCase()==='z'){event.preventDefault();event.shiftKey?restoreSnapshot(redoStack,undoStack):restoreSnapshot(undoStack,redoStack);return;}
+    if(mod&&event.key.toLowerCase()==='d'&&!typing){event.preventDefault();if(selectedId)duplicateObject(selectedId);return;}
+    if(mod&&event.key.toLowerCase()==='j'&&!typing){event.preventDefault();openAIDesign();return;}
+    if(!typing&&(event.key==='Delete'||event.key==='Backspace')){if(selectedId){event.preventDefault();deleteObject(selectedId);}return;}
+    if(!typing&&selectedId&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){event.preventDefault();const obj=getSelected();if(!obj)return;pushHistory();const step=event.shiftKey?10:1;if(event.key==='ArrowLeft')obj.x-=step;if(event.key==='ArrowRight')obj.x+=step;if(event.key==='ArrowUp')obj.y-=step;if(event.key==='ArrowDown')obj.y+=step;renderCanvas();renderInspector();scheduleSave();}
+    if(event.key==='Escape'){selectedId=null;renderCanvas();renderInspector();}
+  });
+  window.addEventListener('resize',()=>{if(activeDoc&&!document.body.classList.contains('screen-dashboard'))renderCanvas();});
+
+  renderDashboard();
+})();
+</script>
+</body>
+</html>
